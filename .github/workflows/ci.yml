@@ -4,6 +4,9 @@ on:
   push:
     branches: ["main"]
   pull_request:
+  schedule:
+    # Mon, Wed, Fri at 06:00 UTC
+    - cron: '0 6 * * 1,3,5'
 
 jobs:
   test:
@@ -44,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     # Only run on pushes to main — PRs from forks won't have secrets
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'schedule'
 
     steps:
       - uses: actions/checkout@v4
