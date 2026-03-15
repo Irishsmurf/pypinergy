@@ -1,6 +1,7 @@
 """Unit tests for PinergyClient — all HTTP calls are mocked with `responses`."""
 
 import pytest
+import requests
 import responses as rsps_lib
 
 from pypinergy import PinergyClient
@@ -414,3 +415,80 @@ def test_user_agent_header_sent():
     rsps_lib.add(rsps_lib.GET, f"{BASE}/api/balance/", json=BALANCE_PAYLOAD, status=200)
     _make_client().get_balance()
     assert rsps_lib.calls[1].request.headers["User-Agent"] == "okhttp/5.1.0"
+
+
+# ---------------------------------------------------------------------------
+# PinergyAPIError __repr__ — exceptions.py line 26
+# ---------------------------------------------------------------------------
+
+
+def test_pinergy_api_error_repr():
+    err = PinergyAPIError(message="quota exceeded", error_code=42)
+    assert repr(err) == "PinergyAPIError(message='quota exceeded', error_code=42)"
+
+
+# ---------------------------------------------------------------------------
+# RequestException (connection-level) paths — client.py lines not yet covered
+# ---------------------------------------------------------------------------
+
+
+@rsps_lib.activate
+def test_get_raises_http_error_on_connection_error():
+    """_get() RequestException branch (lines 95-96)."""
+    _add_login(rsps_lib)
+    rsps_lib.add(
+        rsps_lib.GET,
+        f"{BASE}/api/balance/",
+        body=requests.exceptions.ConnectionError("network failure"),
+    )
+    with pytest.raises(PinergyHTTPError, match="network failure"):
+        _make_client().get_balance()
+
+
+@rsps_lib.activate
+def test_login_raises_http_error_on_connection_error():
+    """login() RequestException branch (lines 130-131)."""
+    rsps_lib.add(
+        rsps_lib.POST,
+        f"{BASE}/api/login/",
+        body=requests.exceptions.ConnectionError("no route to host"),
+    )
+    with pytest.raises(PinergyHTTPError, match="no route to host"):
+        _make_client().login()
+
+
+@rsps_lib.activate
+def test_check_email_raises_http_error_on_connection_error():
+    """check_email() RequestException branch (lines 164-165)."""
+    rsps_lib.add(
+        rsps_lib.GET,
+        f"{BASE}/api/checkemail",
+        body=requests.exceptions.ConnectionError("timeout"),
+    )
+    with pytest.raises(PinergyHTTPError, match="timeout"):
+        _make_client().check_email("x@example.com")
+
+
+@rsps_lib.activate
+def test_update_device_token_raises_http_error_on_connection_error():
+    """update_device_token() RequestException branch (lines 316-317)."""
+    _add_login(rsps_lib)
+    rsps_lib.add(
+        rsps_lib.POST,
+        f"{BASE}/api/updatedevicetoken/",
+        body=requests.exceptions.ConnectionError("connection refused"),
+    )
+    with pytest.raises(PinergyHTTPError, match="connection refused"):
+        _make_client().update_device_token("tok")
+
+
+@rsps_lib.activate
+def test_get_version_raises_http_error_on_connection_error():
+    """get_version() RequestException branch (lines 339-340)."""
+    rsps_lib.add(
+        rsps_lib.GET,
+        f"{BASE}/version.json",
+        body=requests.exceptions.ConnectionError("dns failure"),
+    )
+    with pytest.raises(PinergyHTTPError, match="dns failure"):
+        _make_client().get_version()
