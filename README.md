@@ -1,5 +1,11 @@
 # pypinergy
 
+[![CI](https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml/badge.svg)](https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/irishsmurf/pypinergy/graph/badge.svg)](https://codecov.io/gh/irishsmurf/pypinergy)
+[![PyPI](https://img.shields.io/pypi/v/pypinergy)](https://pypi.org/project/pypinergy/)
+[![Python](https://img.shields.io/pypi/pyversions/pypinergy)](https://pypi.org/project/pypinergy/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A Python client library for the [Pinergy](https://www.pinergy.ie) smart-meter API.
 
 > **Note:** This library is built on a reverse-engineered, unofficial API.
@@ -26,7 +32,7 @@ client = PinergyClient("you@example.com", "your-password")
 
 # Check your current balance
 balance = client.get_balance()
-print(f"Balance: €{balance.balance:.2f}")
+print(f"Balance: €{balance.credit_balance:.2f}")
 print(f"Estimated days remaining: {balance.top_up_in_days}")
 
 # Today's usage
@@ -132,7 +138,7 @@ for day_val in lp.values:
 ```python
 bal = client.get_balance()
 
-print(f"Current balance:    €{bal.balance:.2f}")
+print(f"Current balance:    €{bal.credit_balance:.2f}")
 print(f"Days remaining:     {bal.top_up_in_days}")
 print(f"Last top-up:        €{bal.last_top_up_amount:.2f} on {bal.last_top_up_time:%Y-%m-%d}")
 print(f"Last meter reading: {bal.last_reading:%Y-%m-%d %H:%M UTC}")
@@ -145,7 +151,7 @@ print(f"Power off?          {bal.power_off}")
 
 | Field | Type | Description |
 |---|---|---|
-| `balance` | `float` | Credit balance in euros (€) |
+| `credit_balance` | `float` | Credit balance in euros (€) |
 | `top_up_in_days` | `int` | Estimated days until credit runs out |
 | `pending_top_up` | `bool` | Whether a top-up is pending |
 | `pending_top_up_by` | `str` | Who initiated the pending top-up |
