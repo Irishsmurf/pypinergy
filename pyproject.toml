@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pypinergy"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python client library for the Pinergy smart meter API"
 readme = "README.md"
 license = { text = "MIT" }
@@ -33,9 +33,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pypinergy/pypinergy"
-Repository = "https://github.com/pypinergy/pypinergy"
-"Bug Tracker" = "https://github.com/pypinergy/pypinergy/issues"
+Homepage = "https://github.com/irishsmurf/pypinergy"
+Repository = "https://github.com/irishsmurf/pypinergy"
+"Bug Tracker" = "https://github.com/irishsmurf/pypinergy/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pypinergy"]
