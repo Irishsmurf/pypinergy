@@ -43,7 +43,7 @@ class PinergyClient:
 
         client = PinergyClient("user@example.com", "my-password")
         balance = client.get_balance()
-        print(f"Balance: €{balance.balance:.2f}")
+        print(f"Balance: €{balance.credit_balance:.2f}")
     """
 
     def __init__(
@@ -207,7 +207,7 @@ class PinergyClient:
         Example::
 
             bal = client.get_balance()
-            print(f"€{bal.balance:.2f} — {bal.top_up_in_days} days remaining")
+            print(f"€{bal.credit_balance:.2f} — {bal.top_up_in_days} days remaining")
             if bal.credit_low:
                 print("Warning: credit is low!")
         """

@@ -221,7 +221,7 @@ def test_usage_entries_have_utc_datetimes(client):
 def test_get_balance(client):
     bal = client.get_balance()
     assert isinstance(bal, BalanceResponse)
-    assert isinstance(bal.balance, float)
+    assert isinstance(bal.credit_balance, float)
     assert bal.top_up_in_days >= 0
 
 

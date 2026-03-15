@@ -236,7 +236,7 @@ def test_get_balance():
     rsps_lib.add(rsps_lib.GET, f"{BASE}/api/balance/", json=BALANCE_PAYLOAD, status=200)
     result = _make_client().get_balance()
     assert isinstance(result, BalanceResponse)
-    assert result.balance == pytest.approx(16.38)
+    assert result.credit_balance == pytest.approx(16.38)
     assert result.top_up_in_days == 6
 
 

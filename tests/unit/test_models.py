@@ -123,7 +123,7 @@ def test_usage_response_empty_lists():
 
 def test_balance_response_parsing(conftest_balance_payload):
     br = BalanceResponse._from_dict(conftest_balance_payload)
-    assert br.balance == pytest.approx(16.38)
+    assert br.credit_balance == pytest.approx(16.38)
     assert br.top_up_in_days == 6
     assert br.pending_top_up is False
     assert br.credit_low is False

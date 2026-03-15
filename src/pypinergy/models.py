@@ -222,7 +222,7 @@ class LevelPayUsageResponse:
 class BalanceResponse:
     """Current account balance and meter status."""
 
-    balance: float
+    credit_balance: float
     """Current credit balance in euros (€)."""
     top_up_in_days: int
     """Estimated days until credit is exhausted."""
@@ -245,7 +245,7 @@ class BalanceResponse:
         ltu = d.get("last_top_up_time")
         lr = d.get("last_reading")
         return cls(
-            balance=float(d.get("balance", 0.0)),
+            credit_balance=float(d.get("balance", 0.0)),
             top_up_in_days=int(d.get("top_up_in_days", 0)),
             pending_top_up=bool(d.get("pending_top_up", False)),
             pending_top_up_by=d.get("pending_top_up_by", ""),
