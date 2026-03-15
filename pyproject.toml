@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pypinergy"
+version = "0.1.0"
+description = "Python client library for the Pinergy smart meter API"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "pypinergy contributors" }]
+keywords = ["pinergy", "energy", "smart-meter", "electricity", "ireland"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Home Automation",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.9"
+dependencies = ["requests>=2.28"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "responses>=0.24",
+]
+
+[project.urls]
+Homepage = "https://github.com/pypinergy/pypinergy"
+Repository = "https://github.com/pypinergy/pypinergy"
+"Bug Tracker" = "https://github.com/pypinergy/pypinergy/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pypinergy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=pypinergy --cov-report=term-missing"
+markers = [
+    "network: hits the real Pinergy API (no credentials required, but needs network access)",
+]
+
+[tool.coverage.run]
+source = ["src/pypinergy"]
+
+[tool.coverage.paths]
+source = ["src/pypinergy", "*/pypinergy"]
