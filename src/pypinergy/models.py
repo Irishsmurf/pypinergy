@@ -172,9 +172,9 @@ class UsageResponse:
     @classmethod
     def _from_dict(cls, d: dict) -> "UsageResponse":
         return cls(
-            day=[UsageEntry._from_dict(e) for e in d.get("day", [])],
-            week=[UsageEntry._from_dict(e) for e in d.get("week", [])],
-            month=[UsageEntry._from_dict(e) for e in d.get("month", [])],
+            day=list(map(UsageEntry._from_dict, d.get("day", []))),
+            week=list(map(UsageEntry._from_dict, d.get("week", []))),
+            month=list(map(UsageEntry._from_dict, d.get("month", []))),
         )
 
 
