@@ -62,7 +62,7 @@ class User:
     title: str
     name: str
     pinergy_id: str
-    mobile_number: str
+    mobile_number: str = field(repr=False)
     sms_notifications: bool
     email_notifications: bool
     first_name: str
@@ -107,7 +107,7 @@ class House:
 class CreditCard:
     """Saved payment card summary."""
 
-    cc_token: str
+    cc_token: str = field(repr=False)
     name: str
     last_4_digits: str
 
@@ -124,7 +124,7 @@ class CreditCard:
 class LoginResponse:
     """Successful login payload."""
 
-    auth_token: str
+    auth_token: str = field(repr=False)
     is_legacy_meter: bool
     is_no_wan_meter: bool
     is_level_pay: bool
