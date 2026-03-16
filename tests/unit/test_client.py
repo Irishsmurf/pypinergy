@@ -501,3 +501,15 @@ def test_get_version_raises_http_error_on_connection_error():
     )
     with pytest.raises(PinergyHTTPError, match="dns failure"):
         _make_client().get_version()
+
+@rsps_lib.activate
+def test_get_raises_http_error_on_timeout():
+    """_get() RequestException branch for timeout (lines 95-96)."""
+    _add_login(rsps_lib)
+    rsps_lib.add(
+        rsps_lib.GET,
+        f"{BASE}/api/balance/",
+        body=requests.exceptions.Timeout("Read timed out"),
+    )
+    with pytest.raises(PinergyHTTPError, match="Read timed out"):
+        _make_client().get_balance()
