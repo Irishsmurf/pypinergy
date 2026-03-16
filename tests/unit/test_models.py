@@ -407,5 +407,16 @@ def test_compare_response_empty():
 
     assert cr.week.available is False
     assert cr.week.euro.users_home == pytest.approx(0.0)
+    assert cr.week.euro.average_home == pytest.approx(0.0)
+    assert cr.week.kwh.users_home == pytest.approx(0.0)
+    assert cr.week.kwh.average_home == pytest.approx(0.0)
+    assert cr.week.co2.users_home == pytest.approx(0.0)
+    assert cr.week.co2.average_home == pytest.approx(0.0)
+
     assert cr.month.available is False
+    assert cr.month.euro.users_home == pytest.approx(0.0)
+    assert cr.month.euro.average_home == pytest.approx(0.0)
+    assert cr.month.kwh.users_home == pytest.approx(0.0)
+    assert cr.month.kwh.average_home == pytest.approx(0.0)
+    assert cr.month.co2.users_home == pytest.approx(0.0)
     assert cr.month.co2.average_home == pytest.approx(0.0)
