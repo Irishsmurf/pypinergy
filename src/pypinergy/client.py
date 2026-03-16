@@ -125,8 +125,6 @@ class PinergyClient:
                 timeout=self._timeout,
             )
             response.raise_for_status()
-        except requests.exceptions.HTTPError as exc:
-            raise PinergyHTTPError(str(exc)) from exc
         except requests.exceptions.RequestException as exc:
             raise PinergyHTTPError(str(exc)) from exc
 
