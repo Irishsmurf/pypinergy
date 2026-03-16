@@ -8,17 +8,32 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Tuple, Union
+
+_EPOCH_UTC = datetime.fromtimestamp(0, tz=timezone.utc)
 
 
-def _ts_to_dt(ts: Optional[str | int]) -> Optional[datetime]:
-    """Convert a Unix timestamp (string or int) to an aware UTC datetime."""
-    if ts is None:
-        return None
+def _parse_ts_pair(ts: Union[str, int, None]) -> Tuple[Optional[int], Optional[datetime]]:
+    """Parse a timestamp into both its integer and datetime representations."""
+    if ts is None or ts == "":
+        return None, None
+
     try:
-        return datetime.fromtimestamp(int(ts), tz=timezone.utc)
-    except (ValueError, OSError):
-        return None
+        val = int(ts)
+    except (ValueError, TypeError):
+        return None, None
+
+    try:
+        dt = datetime.fromtimestamp(val, tz=timezone.utc)
+        return val, dt
+    except (ValueError, OSError, OverflowError):
+        return val, None
+
+
+def _ts_to_dt(ts: Union[str, int, None]) -> Optional[datetime]:
+    """Convert a Unix timestamp (string or int) to an aware UTC datetime."""
+    _, dt = _parse_ts_pair(ts)
+    return dt
 
 
 # ---------------------------------------------------------------------------
@@ -147,14 +162,14 @@ class UsageEntry:
 
     @classmethod
     def _from_dict(cls, d: dict) -> "UsageEntry":
-        ts = int(d.get("date", 0))
+        ts_int, dt = _parse_ts_pair(d.get("date", 0))
         return cls(
             available=bool(d.get("available", False)),
             amount=float(d.get("amount", 0.0)),
             kwh=float(d.get("kwh", 0.0)),
             co2=float(d.get("co2", 0.0)),
-            date_ts=ts,
-            date=_ts_to_dt(ts) or datetime.fromtimestamp(0, tz=timezone.utc),
+            date_ts=ts_int if ts_int is not None else 0,
+            date=dt if dt is not None else _EPOCH_UTC,
         )
 
 
@@ -242,8 +257,9 @@ class BalanceResponse:
 
     @classmethod
     def _from_dict(cls, d: dict) -> "BalanceResponse":
-        ltu = d.get("last_top_up_time")
-        lr = d.get("last_reading")
+        ltu_ts, ltu_dt = _parse_ts_pair(d.get("last_top_up_time"))
+        lr_ts, lr_dt = _parse_ts_pair(d.get("last_reading"))
+
         return cls(
             credit_balance=float(d.get("balance", 0.0)),
             top_up_in_days=int(d.get("top_up_in_days", 0)),
@@ -253,10 +269,10 @@ class BalanceResponse:
             credit_low=bool(d.get("credit_low", False)),
             emergency_credit=bool(d.get("emergency_credit", False)),
             power_off=bool(d.get("power_off", False)),
-            last_top_up_ts=int(ltu) if ltu else None,
-            last_top_up_time=_ts_to_dt(ltu),
-            last_reading_ts=int(lr) if lr else None,
-            last_reading=_ts_to_dt(lr),
+            last_top_up_ts=ltu_ts,
+            last_top_up_time=ltu_dt,
+            last_reading_ts=lr_ts,
+            last_reading=lr_dt,
         )
 
 
