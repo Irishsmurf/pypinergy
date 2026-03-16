@@ -348,7 +348,7 @@ def conftest_level_pay_payload():
 # Sensitve Field __repr__ filtering
 # ---------------------------------------------------------------------------
 
-from pypinergy.models import User, CreditCard
+from pypinergy.models import User, CreditCard, House, LoginResponse
 
 def test_sensitive_fields_not_in_repr():
     """Verify that sensitive fields are excluded from dataclass __repr__ output."""
@@ -394,3 +394,19 @@ def test_sensitive_fields_not_in_repr():
     assert "super_secret_auth_token_9876" not in lr_repr
     assert "auth_token=" not in lr_repr
     assert "premises_number=" in lr_repr
+
+def test_compare_response_empty():
+    cr = CompareResponse._from_dict({})
+
+    assert cr.day.available is False
+    assert cr.day.euro.users_home == pytest.approx(0.0)
+    assert cr.day.euro.average_home == pytest.approx(0.0)
+    assert cr.day.kwh.users_home == pytest.approx(0.0)
+    assert cr.day.kwh.average_home == pytest.approx(0.0)
+    assert cr.day.co2.users_home == pytest.approx(0.0)
+    assert cr.day.co2.average_home == pytest.approx(0.0)
+
+    assert cr.week.available is False
+    assert cr.week.euro.users_home == pytest.approx(0.0)
+    assert cr.month.available is False
+    assert cr.month.co2.average_home == pytest.approx(0.0)
