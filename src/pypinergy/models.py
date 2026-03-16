@@ -13,16 +13,6 @@ from typing import List, Optional, Tuple, Union
 _EPOCH_UTC = datetime.fromtimestamp(0, tz=timezone.utc)
 
 
-def _parse_ts_pair(ts: Union[str, int, None]) -> Tuple[Optional[int], Optional[datetime]]:
-    """Parse a timestamp into both its integer and datetime representations."""
-    if ts is None or ts == "":
-        return None, None
-
-    try:
-        val = int(ts)
-    except (ValueError, TypeError):
-        return None, None
-
 def _parse_ts_pair(ts: Optional[str | int]) -> tuple[Optional[int], Optional[datetime]]:
     """Parse a timestamp into both its integer and datetime representations."""
     if ts is None or ts == "":
@@ -183,7 +173,8 @@ class UsageEntry:
             kwh=float(d.get("kwh", 0.0)),
             co2=float(d.get("co2", 0.0)),
             date_ts=ts_int or 0,
-            date=dt or datetime.fromtimestamp(0, tz=timezone.utc),
+            # Re-use the constant instead of instantiating a new aware datetime per fallback
+            date=dt or _EPOCH_UTC,
         )
 
 
