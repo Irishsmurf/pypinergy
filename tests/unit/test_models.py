@@ -164,6 +164,12 @@ def test_active_topups_parsing(conftest_active_topups_payload):
     assert sched.customer == "PINERGY"
 
 
+def test_active_topups_empty():
+    atr = ActiveTopUpsResponse._from_dict({})
+    assert atr.scheduled == []
+    assert atr.auto_top_ups == []
+
+
 # ---------------------------------------------------------------------------
 # CompareResponse
 # ---------------------------------------------------------------------------
