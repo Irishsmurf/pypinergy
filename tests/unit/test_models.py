@@ -386,8 +386,8 @@ def test_sensitive_fields_not_in_repr():
         is_business_connect=False,
         premises_number="123",
         account_type="prepay",
-        user=None,
-        house=None,
+        user=user,
+        house=House(type=0, heating_type=0, bedroom_count=0, adult_count=0, children_count=0),
         credit_cards=[]
     )
     lr_repr = repr(lr)
