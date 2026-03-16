@@ -23,6 +23,20 @@ def _parse_ts_pair(ts: Union[str, int, None]) -> Tuple[Optional[int], Optional[d
     except (ValueError, TypeError):
         return None, None
 
+def _parse_ts_pair(ts: Optional[str | int]) -> tuple[Optional[int], Optional[datetime]]:
+    """Parse a timestamp into both its integer and datetime representations."""
+    if ts is None or ts == "":
+        return None, None
+
+    val: int
+    if isinstance(ts, int):
+        val = ts
+    else:
+        try:
+            val = int(ts)
+        except (ValueError, TypeError):
+            return None, None
+
     try:
         dt = datetime.fromtimestamp(val, tz=timezone.utc)
         return val, dt
@@ -30,7 +44,7 @@ def _parse_ts_pair(ts: Union[str, int, None]) -> Tuple[Optional[int], Optional[d
         return val, None
 
 
-def _ts_to_dt(ts: Union[str, int, None]) -> Optional[datetime]:
+def _ts_to_dt(ts: Optional[str | int]) -> Optional[datetime]:
     """Convert a Unix timestamp (string or int) to an aware UTC datetime."""
     _, dt = _parse_ts_pair(ts)
     return dt
@@ -168,8 +182,8 @@ class UsageEntry:
             amount=float(d.get("amount", 0.0)),
             kwh=float(d.get("kwh", 0.0)),
             co2=float(d.get("co2", 0.0)),
-            date_ts=ts_int if ts_int is not None else 0,
-            date=dt if dt is not None else _EPOCH_UTC,
+            date_ts=ts_int or 0,
+            date=dt or datetime.fromtimestamp(0, tz=timezone.utc),
         )
 
 
