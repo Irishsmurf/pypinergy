@@ -18,14 +18,10 @@ def _parse_ts_pair(ts: Union[str, int, None]) -> Tuple[Optional[int], Optional[d
     if ts is None or ts == "":
         return None, None
 
-    val: int
-    if isinstance(ts, int):
-        val = ts
-    else:
-        try:
-            val = int(ts)
-        except (ValueError, TypeError):
-            return None, None
+    try:
+        val = int(ts)
+    except (ValueError, TypeError):
+        return None, None
 
     try:
         dt = datetime.fromtimestamp(val, tz=timezone.utc)
