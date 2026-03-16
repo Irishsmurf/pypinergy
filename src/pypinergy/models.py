@@ -8,8 +8,20 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Tuple, Union
 
+_EPOCH_UTC = datetime.fromtimestamp(0, tz=timezone.utc)
+
+
+def _parse_ts_pair(ts: Union[str, int, None]) -> Tuple[Optional[int], Optional[datetime]]:
+    """Parse a timestamp into both its integer and datetime representations."""
+    if ts is None or ts == "":
+        return None, None
+
+    try:
+        val = int(ts)
+    except (ValueError, TypeError):
+        return None, None
 
 def _parse_ts_pair(ts: Optional[str | int]) -> tuple[Optional[int], Optional[datetime]]:
     """Parse a timestamp into both its integer and datetime representations."""
@@ -137,7 +149,7 @@ class LoginResponse:
             account_type=d.get("account_type", ""),
             user=User._from_dict(d.get("user", {})),
             house=House._from_dict(d.get("house", {})),
-            credit_cards=[CreditCard._from_dict(c) for c in d.get("credit_cards", [])],
+            credit_cards=list(map(CreditCard._from_dict, d.get("credit_cards", []))),
         )
 
 
@@ -189,9 +201,9 @@ class UsageResponse:
     @classmethod
     def _from_dict(cls, d: dict) -> "UsageResponse":
         return cls(
-            day=[UsageEntry._from_dict(e) for e in d.get("day", [])],
-            week=[UsageEntry._from_dict(e) for e in d.get("week", [])],
-            month=[UsageEntry._from_dict(e) for e in d.get("month", [])],
+            day=list(map(UsageEntry._from_dict, d.get("day", []))),
+            week=list(map(UsageEntry._from_dict, d.get("week", []))),
+            month=list(map(UsageEntry._from_dict, d.get("month", []))),
         )
 
 
@@ -226,7 +238,7 @@ class LevelPayUsageResponse:
         return cls(
             labels=daily.get("labels", []),
             flags=daily.get("flags", []),
-            values=[LevelPayDailyValue._from_dict(v) for v in daily.get("values", [])],
+            values=list(map(LevelPayDailyValue._from_dict, daily.get("values", []))),
         )
 
 
@@ -313,7 +325,7 @@ class ActiveTopUpsResponse:
     @classmethod
     def _from_dict(cls, d: dict) -> "ActiveTopUpsResponse":
         return cls(
-            scheduled=[ScheduledTopUp._from_dict(s) for s in d.get("scheduled", [])],
+            scheduled=list(map(ScheduledTopUp._from_dict, d.get("scheduled", []))),
             auto_top_ups=d.get("auto_top_ups", []),
         )
 
@@ -434,8 +446,8 @@ class DefaultsInfoResponse:
     @classmethod
     def _from_dict(cls, d: dict) -> "DefaultsInfoResponse":
         return cls(
-            house_types=[HouseType._from_dict(h) for h in d.get("house_types", [])],
-            heating_types=[HeatingType._from_dict(h) for h in d.get("heating_types", [])],
+            house_types=list(map(HouseType._from_dict, d.get("house_types", []))),
+            heating_types=list(map(HeatingType._from_dict, d.get("heating_types", []))),
             max_bedrooms=int(d.get("max_bedrooms", 0)),
             default_bedrooms=int(d.get("default_bedrooms", 0)),
             max_adults=int(d.get("max_adults", 0)),

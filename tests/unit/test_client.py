@@ -65,6 +65,15 @@ def test_client_is_authenticated_false_initially():
     assert not _make_client().is_authenticated
 
 
+def test_client_does_not_store_plaintext_password():
+    password = "secret-password"
+    client = PinergyClient("user@example.com", password, base_url=BASE)
+    assert not hasattr(client, "_password")
+    assert hasattr(client, "_password_hash")
+    # Ensure the plaintext password is not in the object's dictionary at all
+    assert password not in client.__dict__.values()
+
+
 # ---------------------------------------------------------------------------
 # Login
 # ---------------------------------------------------------------------------

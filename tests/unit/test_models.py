@@ -18,12 +18,56 @@ from pypinergy.models import (
     UsageEntry,
     UsageResponse,
     _ts_to_dt,
+    _parse_ts_pair,
 )
 
 
 # ---------------------------------------------------------------------------
-# _ts_to_dt helper
+# _parse_ts_pair and _ts_to_dt helpers
 # ---------------------------------------------------------------------------
+
+
+def test_parse_ts_pair_valid_int():
+    ts, dt = _parse_ts_pair(1773446400)
+    assert ts == 1773446400
+    assert dt == datetime(2026, 3, 14, tzinfo=timezone.utc)
+
+
+def test_parse_ts_pair_valid_string():
+    ts, dt = _parse_ts_pair("1773446400")
+    assert ts == 1773446400
+    assert dt == datetime(2026, 3, 14, tzinfo=timezone.utc)
+
+
+def test_parse_ts_pair_negative():
+    ts, dt = _parse_ts_pair("-3600")
+    assert ts == -3600
+    assert dt == datetime(1969, 12, 31, 23, 0, tzinfo=timezone.utc)
+
+
+def test_parse_ts_pair_none():
+    ts, dt = _parse_ts_pair(None)
+    assert ts is None
+    assert dt is None
+
+
+def test_parse_ts_pair_empty_string():
+    ts, dt = _parse_ts_pair("")
+    assert ts is None
+    assert dt is None
+
+
+def test_parse_ts_pair_invalid_string():
+    ts, dt = _parse_ts_pair("not-a-number")
+    assert ts is None
+    assert dt is None
+
+
+def test_parse_ts_pair_overflow():
+    # Very large number that might cause OverflowError in datetime
+    ts, dt = _parse_ts_pair(2**60)
+    assert ts == 2**60
+    assert dt is None
 
 
 def test_ts_to_dt_valid_string():
@@ -162,6 +206,12 @@ def test_active_topups_parsing(conftest_active_topups_payload):
     assert sched.top_up_day == 13
     assert sched.current_user is False
     assert sched.customer == "PINERGY"
+
+
+def test_active_topups_empty():
+    atr = ActiveTopUpsResponse._from_dict({})
+    assert atr.scheduled == []
+    assert atr.auto_top_ups == []
 
 
 # ---------------------------------------------------------------------------
