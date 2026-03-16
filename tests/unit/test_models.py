@@ -343,3 +343,54 @@ def conftest_notif_payload():
 def conftest_level_pay_payload():
     from tests.conftest import LEVEL_PAY_PAYLOAD
     return LEVEL_PAY_PAYLOAD
+
+# ---------------------------------------------------------------------------
+# Sensitve Field __repr__ filtering
+# ---------------------------------------------------------------------------
+
+from pypinergy.models import User, CreditCard
+
+def test_sensitive_fields_not_in_repr():
+    """Verify that sensitive fields are excluded from dataclass __repr__ output."""
+    user = User(
+        title="Mr",
+        name="John Doe",
+        pinergy_id="123456",
+        mobile_number="0871234567",
+        sms_notifications=True,
+        email_notifications=True,
+        first_name="John",
+        last_name="Doe"
+    )
+    user_repr = repr(user)
+    assert "0871234567" not in user_repr
+    assert "mobile_number=" not in user_repr
+    assert "pinergy_id=" in user_repr
+
+    cc = CreditCard(
+        cc_token="secret_stripe_token_5678",
+        name="Visa",
+        last_4_digits="4242"
+    )
+    cc_repr = repr(cc)
+    assert "secret_stripe_token_5678" not in cc_repr
+    assert "cc_token=" not in cc_repr
+    assert "name=" in cc_repr
+
+    lr = LoginResponse(
+        auth_token="super_secret_auth_token_9876",
+        is_legacy_meter=False,
+        is_no_wan_meter=False,
+        is_level_pay=False,
+        is_child=False,
+        is_business_connect=False,
+        premises_number="123",
+        account_type="prepay",
+        user=user,
+        house=House(type=0, heating_type=0, bedroom_count=0, adult_count=0, children_count=0),
+        credit_cards=[]
+    )
+    lr_repr = repr(lr)
+    assert "super_secret_auth_token_9876" not in lr_repr
+    assert "auth_token=" not in lr_repr
+    assert "premises_number=" in lr_repr
