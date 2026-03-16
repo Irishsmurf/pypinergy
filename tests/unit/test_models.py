@@ -7,7 +7,6 @@ import pytest
 from pypinergy.models import (
     ActiveTopUpsResponse,
     BalanceResponse,
-    ComparePeriod,
     CompareResponse,
     ConfigInfoResponse,
     DefaultsInfoResponse,
@@ -15,7 +14,6 @@ from pypinergy.models import (
     LoginResponse,
     NotificationPreferences,
     ScheduledTopUp,
-    UsageEntry,
     UsageResponse,
     _ts_to_dt,
     _parse_ts_pair,
@@ -348,7 +346,8 @@ def conftest_level_pay_payload():
 # Sensitve Field __repr__ filtering
 # ---------------------------------------------------------------------------
 
-from pypinergy.models import User, CreditCard, House, LoginResponse
+from pypinergy.models import CreditCard, House, User, LoginResponse
+
 
 def test_sensitive_fields_not_in_repr():
     """Verify that sensitive fields are excluded from dataclass __repr__ output."""
