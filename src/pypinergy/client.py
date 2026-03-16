@@ -54,7 +54,7 @@ class PinergyClient:
         timeout: int = 30,
     ) -> None:
         self._email = email
-        self._password = password
+        self._password_hash = hash_password(password)
         self._base_url = base_url.rstrip("/")
         self._timeout = timeout
         self._auth_token: Optional[str] = None
@@ -115,7 +115,7 @@ class PinergyClient:
         """
         payload = {
             "email": self._email,
-            "password": hash_password(self._password),
+            "password": self._password_hash,
             "device_token": "",
         }
         try:
