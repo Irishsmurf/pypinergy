@@ -10,25 +10,27 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import List, Optional, Tuple, Union
 
+# Cache C-extension lookups for faster datetime instantiations in parsing loops
 _EPOCH_UTC = datetime.fromtimestamp(0, tz=timezone.utc)
+_from_ts = datetime.fromtimestamp
+_utc = timezone.utc
 
 
 def _parse_ts_pair(ts: Optional[str | int]) -> tuple[Optional[int], Optional[datetime]]:
     """Parse a timestamp into both its integer and datetime representations."""
-    if ts is None or ts == "":
-        return None, None
-
-    val: int
-    if isinstance(ts, int):
-        val = ts
-    else:
-        try:
-            val = int(ts)
-        except (ValueError, TypeError):
+    if not ts:  # Fast short-circuit for empty string, None, or 0
+        if ts is None or ts == "":
             return None, None
 
     try:
-        dt = datetime.fromtimestamp(val, tz=timezone.utc)
+        # int() natively handles type conversion and valid whitespace stripping.
+        # It operates safely on string and integer types.
+        val = ts if type(ts) is int else int(ts)
+    except (ValueError, TypeError):
+        return None, None
+
+    try:
+        dt = _from_ts(val, tz=_utc)
         return val, dt
     except (ValueError, OSError, OverflowError):
         return val, None
