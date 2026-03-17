@@ -138,8 +138,13 @@ class PinergyClient:
         return LoginResponse._from_dict(data)
 
     def logout(self) -> None:
-        """Clear the stored auth token, effectively ending the session."""
+        """Clear the stored auth token, effectively ending the session.
+
+        Also clears the cached password hash so automatic re-login does not happen
+        transparently after explicit logout.
+        """
         self._auth_token = None
+        self._password_hash = None
 
     def check_email(self, email: str) -> bool:
         """Check whether an email address has a registered Pinergy account.
