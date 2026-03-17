@@ -8,7 +8,7 @@ def test_logout_defeats_auto_login():
     responses.add(
         responses.POST,
         "https://api.pinergy.ie/api/login/",
-        json={"success": True, "auth_token": "token123", "is_legacy_meter": False, "is_no_wan_meter": False, "is_level_pay": False, "is_child": False, "is_business_connect": False, "premises_number": "1", "account_type": "1", "user": {}, "house": {}, "credit_cards": []},
+        json={"success": True, "auth_token": "token123"},
         status=200,
     )
     responses.add(
