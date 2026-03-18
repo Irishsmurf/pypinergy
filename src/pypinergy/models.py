@@ -12,24 +12,26 @@ from typing import List, Optional, Tuple, Union
 
 _EPOCH_UTC = datetime.fromtimestamp(0, tz=timezone.utc)
 
+# Cache module-level constants for faster instantiation inside tight loops
+_fromtimestamp = datetime.fromtimestamp
+_utc = timezone.utc
+
 
 def _parse_ts_pair(ts: Optional[str | int]) -> tuple[Optional[int], Optional[datetime]]:
     """Parse a timestamp into both its integer and datetime representations."""
     if ts is None or ts == "":
         return None, None
 
-    val: int
-    if isinstance(ts, int):
-        val = ts
-    else:
-        try:
-            val = int(ts)
-        except (ValueError, TypeError):
-            return None, None
+    # Performance optimization: using try...except int(ts) is faster than
+    # checking isinstance(ts, int) first on the happy path.
+    try:
+        val = int(ts)
+    except (ValueError, TypeError):
+        return None, None
 
     try:
-        dt = datetime.fromtimestamp(val, tz=timezone.utc)
-        return val, dt
+        # Avoid repeated global/attribute lookups by using cached references
+        return val, _fromtimestamp(val, tz=_utc)
     except (ValueError, OSError, OverflowError):
         return val, None
 
