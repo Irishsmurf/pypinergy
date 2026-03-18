@@ -24,6 +24,14 @@ _BASE_URL = "https://api.pinergy.ie"
 _USER_AGENT = "okhttp/5.1.0"
 
 
+class _NoRedirectSession(requests.Session):
+    """A requests Session that disables redirects by default to prevent header leakage."""
+
+    def request(self, method, url, *args, **kwargs):
+        kwargs.setdefault("allow_redirects", False)
+        return super().request(method, url, *args, **kwargs)
+
+
 class PinergyClient:
     """Client for the Pinergy smart-meter API.
 
@@ -58,7 +66,7 @@ class PinergyClient:
         self._base_url = base_url.rstrip("/")
         self._timeout = timeout
         self._auth_token: Optional[str] = None
-        self._session = requests.Session()
+        self._session = _NoRedirectSession()
         self._session.headers.update({"User-Agent": _USER_AGENT})
 
     # ------------------------------------------------------------------
@@ -82,12 +90,10 @@ class PinergyClient:
         """Perform an authenticated GET and return the parsed JSON body."""
         self._ensure_auth()
         try:
-            # Security: disable redirects to prevent leaking the custom auth_token header to a third party
             response = self._session.get(
                 self._url(path),
                 headers={"auth_token": self._auth_token},
                 timeout=self._timeout,
-                allow_redirects=False,
             )
             response.raise_for_status()
         except requests.exceptions.HTTPError as exc:
@@ -121,12 +127,10 @@ class PinergyClient:
             "device_token": "",
         }
         try:
-            # Security: disable redirects to prevent leaking the password hash
             response = self._session.post(
                 self._url("/api/login/"),
                 json=payload,
                 timeout=self._timeout,
-                allow_redirects=False,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
@@ -162,12 +166,10 @@ class PinergyClient:
             True if the address is registered.
         """
         try:
-            # Security: disable redirects to prevent leaking the email_address header
             response = self._session.get(
                 self._url("/api/checkemail"),
                 headers={"email_address": email},
                 timeout=self._timeout,
-                allow_redirects=False,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
@@ -315,13 +317,11 @@ class PinergyClient:
             "os_version": os_version,
         }
         try:
-            # Security: disable redirects to prevent leaking the auth_token header
             response = self._session.post(
                 self._url("/api/updatedevicetoken/"),
                 json=payload,
                 headers={"auth_token": self._auth_token},
                 timeout=self._timeout,
-                allow_redirects=False,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
@@ -345,7 +345,6 @@ class PinergyClient:
             response = self._session.get(
                 self._url("/version.json"),
                 timeout=self._timeout,
-                allow_redirects=False,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
