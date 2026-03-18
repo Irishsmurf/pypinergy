@@ -82,10 +82,12 @@ class PinergyClient:
         """Perform an authenticated GET and return the parsed JSON body."""
         self._ensure_auth()
         try:
+            # Security: disable redirects to prevent leaking the custom auth_token header to a third party
             response = self._session.get(
                 self._url(path),
                 headers={"auth_token": self._auth_token},
                 timeout=self._timeout,
+                allow_redirects=False,
             )
             response.raise_for_status()
         except requests.exceptions.HTTPError as exc:
@@ -119,10 +121,12 @@ class PinergyClient:
             "device_token": "",
         }
         try:
+            # Security: disable redirects to prevent leaking the password hash
             response = self._session.post(
                 self._url("/api/login/"),
                 json=payload,
                 timeout=self._timeout,
+                allow_redirects=False,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
@@ -158,10 +162,12 @@ class PinergyClient:
             True if the address is registered.
         """
         try:
+            # Security: disable redirects to prevent leaking the email_address header
             response = self._session.get(
                 self._url("/api/checkemail"),
                 headers={"email_address": email},
                 timeout=self._timeout,
+                allow_redirects=False,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
@@ -309,11 +315,13 @@ class PinergyClient:
             "os_version": os_version,
         }
         try:
+            # Security: disable redirects to prevent leaking the auth_token header
             response = self._session.post(
                 self._url("/api/updatedevicetoken/"),
                 json=payload,
                 headers={"auth_token": self._auth_token},
                 timeout=self._timeout,
+                allow_redirects=False,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
@@ -337,6 +345,7 @@ class PinergyClient:
             response = self._session.get(
                 self._url("/version.json"),
                 timeout=self._timeout,
+                allow_redirects=False,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
