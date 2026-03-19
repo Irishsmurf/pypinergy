@@ -61,7 +61,9 @@ class PinergyClient:
         base_url: str = _BASE_URL,
         timeout: int = 30,
     ) -> None:
-        if base_url.startswith("http://") and "localhost" not in base_url and "127.0.0.1" not in base_url:
+        from urllib.parse import urlparse
+        p = urlparse(base_url)
+        if p.scheme == "http" and p.hostname not in ("localhost", "127.0.0.1"):
             raise ValueError("base_url must use HTTPS to prevent credential leakage")
 
         self._email = email
