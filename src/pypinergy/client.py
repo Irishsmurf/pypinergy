@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Optional
 
+from urllib.parse import urlparse
 import requests
 
 from ._auth import hash_password
@@ -61,6 +62,13 @@ class PinergyClient:
         base_url: str = _BASE_URL,
         timeout: int = 30,
     ) -> None:
+        # Enforce HTTPS to prevent plaintext credential leakage via API requests.
+        # Localhost is exempted for testing purposes.
+        parsed = urlparse(base_url)
+        is_https = parsed.scheme == "https"
+        is_local = parsed.hostname in ("localhost", "127.0.0.1")
+        if not is_https and not is_local:
+            raise ValueError("base_url must be HTTPS (or localhost for testing) to protect credentials.")
         self._email = email
         self._password_hash = hash_password(password)
         self._base_url = base_url.rstrip("/")

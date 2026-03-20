@@ -74,6 +74,23 @@ def test_client_does_not_store_plaintext_password():
     assert password not in client.__dict__.values()
 
 
+def test_client_enforces_https_for_external_urls():
+    with pytest.raises(ValueError, match="base_url must be HTTPS"):
+        PinergyClient("user@example.com", "secret", base_url="http://api.pinergy.ie")
+
+    with pytest.raises(ValueError, match="base_url must be HTTPS"):
+        PinergyClient("user@example.com", "secret", base_url="http://localhost.example.com")
+
+
+def test_client_allows_http_for_localhost():
+    # Should not raise ValueError
+    client_local = PinergyClient("user@example.com", "secret", base_url="http://localhost:8080")
+    assert client_local._base_url == "http://localhost:8080"
+
+    client_ip = PinergyClient("user@example.com", "secret", base_url="http://127.0.0.1:5000")
+    assert client_ip._base_url == "http://127.0.0.1:5000"
+
+
 # ---------------------------------------------------------------------------
 # Login
 # ---------------------------------------------------------------------------
