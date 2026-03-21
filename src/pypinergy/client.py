@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Optional
+from urllib.parse import urlparse
 
 import requests
 
@@ -61,6 +62,10 @@ class PinergyClient:
         base_url: str = _BASE_URL,
         timeout: int = 30,
     ) -> None:
+        parsed_url = urlparse(base_url)
+        if parsed_url.scheme == "http" and parsed_url.hostname not in ("localhost", "127.0.0.1"):
+            raise ValueError("PinergyClient requires HTTPS. Plaintext HTTP is only allowed for localhost testing.")
+
         self._email = email
         self._password_hash = hash_password(password)
         self._base_url = base_url.rstrip("/")
