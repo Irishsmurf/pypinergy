@@ -513,3 +513,26 @@ def test_get_raises_http_error_on_timeout():
     )
     with pytest.raises(PinergyHTTPError, match="Read timed out"):
         _make_client().get_balance()
+
+
+# ---------------------------------------------------------------------------
+# Base URL Validation (Sentinel)
+# ---------------------------------------------------------------------------
+
+
+def test_https_enforced():
+    """Client raises ValueError if base_url is http:// and not localhost."""
+    with pytest.raises(ValueError, match="PinergyClient requires HTTPS"):
+        PinergyClient("a@b.com", "pass", base_url="http://api.pinergy.ie")
+
+    with pytest.raises(ValueError, match="PinergyClient requires HTTPS"):
+        PinergyClient("a@b.com", "pass", base_url="http://example.com")
+
+
+def test_http_localhost_allowed():
+    """Client allows http:// for local testing environments."""
+    # Should not raise
+    PinergyClient("a@b.com", "pass", base_url="http://localhost")
+    PinergyClient("a@b.com", "pass", base_url="http://localhost:8080")
+    PinergyClient("a@b.com", "pass", base_url="http://127.0.0.1")
+    PinergyClient("a@b.com", "pass", base_url="http://127.0.0.1:5000")
