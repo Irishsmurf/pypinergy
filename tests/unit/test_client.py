@@ -80,6 +80,30 @@ def test_client_does_not_store_plaintext_password():
 
 
 @rsps_lib.activate
+def test_insecure_base_url():
+    """Ensure HTTP base URLs are rejected unless targeting localhost."""
+    # Should raise for standard HTTP host
+    with pytest.raises(ValueError, match="Insecure base URL: 'http://api.example.com'. Only HTTPS is allowed"):
+        PinergyClient("user@example.com", "secret", base_url="http://api.example.com")
+
+    # Should raise for localhost with a subdomain (bypass check)
+    with pytest.raises(ValueError, match="Insecure base URL: 'http://localhost.example.com'. Only HTTPS is allowed"):
+        PinergyClient("user@example.com", "secret", base_url="http://localhost.example.com")
+
+    # Should not raise for HTTPS
+    client = PinergyClient("user@example.com", "secret", base_url="https://api.example.com")
+    assert client._base_url == "https://api.example.com"
+
+    # Should not raise for localhost
+    client_localhost = PinergyClient("user@example.com", "secret", base_url="http://localhost:8080")
+    assert client_localhost._base_url == "http://localhost:8080"
+
+    # Should not raise for 127.0.0.1
+    client_local_ip = PinergyClient("user@example.com", "secret", base_url="http://127.0.0.1:8080")
+    assert client_local_ip._base_url == "http://127.0.0.1:8080"
+
+
+@rsps_lib.activate
 def test_login_success():
     _add_login(rsps_lib)
     client = _make_client()
