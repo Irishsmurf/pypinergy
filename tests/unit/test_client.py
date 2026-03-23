@@ -33,6 +33,24 @@ BASE = "https://api.pinergy.ie"
 
 
 # ---------------------------------------------------------------------------
+# Initialization
+# ---------------------------------------------------------------------------
+
+def test_init_raises_valueerror_for_insecure_http_url():
+    """Verify that using an insecure HTTP URL raises a ValueError."""
+    with pytest.raises(ValueError, match="HTTPS is required for base_url"):
+        PinergyClient("test@example.com", "password", base_url="http://example.com")
+
+
+def test_init_allows_local_http_urls():
+    """Verify that local HTTP URLs are allowed for testing."""
+    # Should not raise any exception
+    PinergyClient("test@example.com", "password", base_url="http://localhost:8080")
+    PinergyClient("test@example.com", "password", base_url="http://127.0.0.1:8000")
+    PinergyClient("test@example.com", "password", base_url="https://api.pinergy.ie")
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import urllib.parse
 from typing import Optional
 
 import requests
@@ -63,6 +64,11 @@ class PinergyClient:
     ) -> None:
         self._email = email
         self._password_hash = hash_password(password)
+
+        parsed = urllib.parse.urlparse(base_url)
+        if parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1"):
+            raise ValueError("HTTPS is required for base_url to prevent credential leakage. Use https:// or a local test URL.")
+
         self._base_url = base_url.rstrip("/")
         self._timeout = timeout
         self._auth_token: Optional[str] = None
