@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional
 
 _EPOCH_UTC = datetime.fromtimestamp(0, tz=timezone.utc)
 
@@ -19,13 +19,18 @@ _utc = timezone.utc
 
 def _parse_ts_pair(ts: Optional[str | int]) -> tuple[Optional[int], Optional[datetime]]:
     """Parse a timestamp into both its integer and datetime representations."""
-    if ts is None or ts == "":
-        return None, None
+    # Fast-path for empty values and common zero-timestamps to avoid parsing overhead
+    if not ts:
+        if ts is None or ts == "":
+            return None, None
+        return 0, _EPOCH_UTC
 
     # Performance optimization: using try...except int(ts) is faster than
     # checking isinstance(ts, int) first on the happy path.
     try:
         val = int(ts)
+        if val == 0:
+            return 0, _EPOCH_UTC
     except (ValueError, TypeError):
         return None, None
 
