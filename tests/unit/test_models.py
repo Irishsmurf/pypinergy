@@ -9,12 +9,15 @@ from pypinergy.models import (
     BalanceResponse,
     CompareResponse,
     ConfigInfoResponse,
+    CreditCard,
     DefaultsInfoResponse,
+    House,
     LevelPayUsageResponse,
     LoginResponse,
     NotificationPreferences,
     ScheduledTopUp,
     UsageResponse,
+    User,
     _ts_to_dt,
     _parse_ts_pair,
 )
@@ -292,61 +295,69 @@ def test_level_pay_usage_parsing(conftest_level_pay_payload):
 @pytest.fixture
 def conftest_login_payload():
     from tests.conftest import LOGIN_PAYLOAD
+
     return LOGIN_PAYLOAD
 
 
 @pytest.fixture
 def conftest_usage_payload():
     from tests.conftest import USAGE_PAYLOAD
+
     return USAGE_PAYLOAD
 
 
 @pytest.fixture
 def conftest_balance_payload():
     from tests.conftest import BALANCE_PAYLOAD
+
     return BALANCE_PAYLOAD
 
 
 @pytest.fixture
 def conftest_active_topups_payload():
     from tests.conftest import ACTIVE_TOPUPS_PAYLOAD
+
     return ACTIVE_TOPUPS_PAYLOAD
 
 
 @pytest.fixture
 def conftest_compare_payload():
     from tests.conftest import COMPARE_PAYLOAD
+
     return COMPARE_PAYLOAD
 
 
 @pytest.fixture
 def conftest_config_payload():
     from tests.conftest import CONFIG_PAYLOAD
+
     return CONFIG_PAYLOAD
 
 
 @pytest.fixture
 def conftest_defaults_payload():
     from tests.conftest import DEFAULTS_PAYLOAD
+
     return DEFAULTS_PAYLOAD
 
 
 @pytest.fixture
 def conftest_notif_payload():
     from tests.conftest import NOTIF_PAYLOAD
+
     return NOTIF_PAYLOAD
 
 
 @pytest.fixture
 def conftest_level_pay_payload():
     from tests.conftest import LEVEL_PAY_PAYLOAD
+
     return LEVEL_PAY_PAYLOAD
+
 
 # ---------------------------------------------------------------------------
 # Sensitve Field __repr__ filtering
 # ---------------------------------------------------------------------------
-
-from pypinergy.models import CreditCard, House, User, LoginResponse
 
 
 def test_sensitive_fields_not_in_repr():
@@ -359,7 +370,7 @@ def test_sensitive_fields_not_in_repr():
         sms_notifications=True,
         email_notifications=True,
         first_name="John",
-        last_name="Doe"
+        last_name="Doe",
     )
     user_repr = repr(user)
     assert "0871234567" not in user_repr
@@ -367,9 +378,7 @@ def test_sensitive_fields_not_in_repr():
     assert "pinergy_id=" in user_repr
 
     cc = CreditCard(
-        cc_token="secret_stripe_token_5678",
-        name="Visa",
-        last_4_digits="4242"
+        cc_token="secret_stripe_token_5678", name="Visa", last_4_digits="4242"
     )
     cc_repr = repr(cc)
     assert "secret_stripe_token_5678" not in cc_repr
@@ -386,13 +395,16 @@ def test_sensitive_fields_not_in_repr():
         premises_number="123",
         account_type="prepay",
         user=user,
-        house=House(type=0, heating_type=0, bedroom_count=0, adult_count=0, children_count=0),
-        credit_cards=[]
+        house=House(
+            type=0, heating_type=0, bedroom_count=0, adult_count=0, children_count=0
+        ),
+        credit_cards=[],
     )
     lr_repr = repr(lr)
     assert "super_secret_auth_token_9876" not in lr_repr
     assert "auth_token=" not in lr_repr
     assert "premises_number=" in lr_repr
+
 
 def test_compare_response_empty():
     cr = CompareResponse._from_dict({})

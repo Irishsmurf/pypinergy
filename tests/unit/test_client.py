@@ -65,6 +65,22 @@ def test_client_is_authenticated_false_initially():
     assert not _make_client().is_authenticated
 
 
+def test_client_enforces_https_base_url():
+    """Verify HTTP base URLs are rejected unless localhost."""
+    with pytest.raises(ValueError, match="Base URL must use HTTPS"):
+        PinergyClient("user@example.com", "secret", base_url="http://api.pinergy.ie")
+
+    with pytest.raises(ValueError, match="Base URL must use HTTPS"):
+        PinergyClient(
+            "user@example.com", "secret", base_url="http://localhost.example.com"
+        )
+
+    # Valid ones should not raise
+    PinergyClient("user@example.com", "secret", base_url="https://api.pinergy.ie")
+    PinergyClient("user@example.com", "secret", base_url="http://localhost:8080")
+    PinergyClient("user@example.com", "secret", base_url="http://127.0.0.1:9090")
+
+
 def test_client_does_not_store_plaintext_password():
     password = "secret-password"
     client = PinergyClient("user@example.com", password, base_url=BASE)
@@ -99,6 +115,7 @@ def test_login_sends_sha1_password():
 
     request_body = rsps_lib.calls[0].request.body
     import json
+
     body = json.loads(request_body)
     # "secret" SHA-1 = e5e9fa1ba31ecd1ae84f75caaa474f3a663f05f4
     assert body["password"] == "e5e9fa1ba31ecd1ae84f75caaa474f3a663f05f4"
@@ -229,7 +246,9 @@ def test_get_usage_sends_auth_token():
 @rsps_lib.activate
 def test_get_level_pay_usage():
     _add_login(rsps_lib)
-    rsps_lib.add(rsps_lib.GET, f"{BASE}/api/levelpayusage/", json=LEVEL_PAY_PAYLOAD, status=200)
+    rsps_lib.add(
+        rsps_lib.GET, f"{BASE}/api/levelpayusage/", json=LEVEL_PAY_PAYLOAD, status=200
+    )
     result = _make_client().get_level_pay_usage()
     assert isinstance(result, LevelPayUsageResponse)
     assert result.labels == ["00:00", "00:30", "01:00"]
@@ -258,7 +277,12 @@ def test_get_balance():
 @rsps_lib.activate
 def test_get_active_topups():
     _add_login(rsps_lib)
-    rsps_lib.add(rsps_lib.GET, f"{BASE}/api/activetopups/", json=ACTIVE_TOPUPS_PAYLOAD, status=200)
+    rsps_lib.add(
+        rsps_lib.GET,
+        f"{BASE}/api/activetopups/",
+        json=ACTIVE_TOPUPS_PAYLOAD,
+        status=200,
+    )
     result = _make_client().get_active_topups()
     assert isinstance(result, ActiveTopUpsResponse)
     assert len(result.scheduled) == 1
@@ -286,7 +310,9 @@ def test_compare_usage():
 @rsps_lib.activate
 def test_get_config_info():
     _add_login(rsps_lib)
-    rsps_lib.add(rsps_lib.GET, f"{BASE}/api/configinfo/", json=CONFIG_PAYLOAD, status=200)
+    rsps_lib.add(
+        rsps_lib.GET, f"{BASE}/api/configinfo/", json=CONFIG_PAYLOAD, status=200
+    )
     result = _make_client().get_config_info()
     assert isinstance(result, ConfigInfoResponse)
     assert result.thresholds == [5]
@@ -300,7 +326,9 @@ def test_get_config_info():
 @rsps_lib.activate
 def test_get_defaults_info():
     _add_login(rsps_lib)
-    rsps_lib.add(rsps_lib.GET, f"{BASE}/api/defaultsinfo/", json=DEFAULTS_PAYLOAD, status=200)
+    rsps_lib.add(
+        rsps_lib.GET, f"{BASE}/api/defaultsinfo/", json=DEFAULTS_PAYLOAD, status=200
+    )
     result = _make_client().get_defaults_info()
     assert isinstance(result, DefaultsInfoResponse)
     assert len(result.house_types) == 3
@@ -348,9 +376,12 @@ def test_update_device_token_sends_payload():
         json={"success": True},
         status=200,
     )
-    _make_client().update_device_token("my-token", device_type="android", os_version="13")
+    _make_client().update_device_token(
+        "my-token", device_type="android", os_version="13"
+    )
 
     import json
+
     body = json.loads(rsps_lib.calls[1].request.body)
     assert body["device_token"] == "my-token"
     assert body["device_type"] == "android"
@@ -501,6 +532,7 @@ def test_get_version_raises_http_error_on_connection_error():
     )
     with pytest.raises(PinergyHTTPError, match="dns failure"):
         _make_client().get_version()
+
 
 @rsps_lib.activate
 def test_get_raises_http_error_on_timeout():

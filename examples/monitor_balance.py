@@ -44,7 +44,9 @@ def main():
     if bal.credit_low:
         alerts.append("Credit is below configured threshold.")
     if bal.balance < THRESHOLD:
-        alerts.append(f"Balance €{bal.balance:.2f} is below your alert threshold of €{THRESHOLD:.2f}.")
+        alerts.append(
+            f"Balance €{bal.balance:.2f} is below your alert threshold of €{THRESHOLD:.2f}."
+        )
 
     if alerts:
         print()
