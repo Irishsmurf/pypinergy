@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional
 
 _EPOCH_UTC = datetime.fromtimestamp(0, tz=timezone.utc)
 
