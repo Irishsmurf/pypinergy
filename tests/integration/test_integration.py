@@ -27,7 +27,6 @@ from pypinergy.models import (
     CompareResponse,
     ConfigInfoResponse,
     DefaultsInfoResponse,
-    LoginResponse,
     NotificationPreferences,
     UsageResponse,
 )
@@ -207,6 +206,7 @@ def test_usage_entry_has_valid_amounts(client):
 @_SKIP
 def test_usage_entries_have_utc_datetimes(client):
     from datetime import timezone
+
     usage = client.get_usage()
     for entry in usage.day:
         assert entry.date.tzinfo is timezone.utc
