@@ -3,6 +3,7 @@ import responses
 from pypinergy import PinergyClient
 from pypinergy.exceptions import PinergyAuthError
 
+
 @responses.activate
 def test_logout_defeats_auto_login():
     responses.add(

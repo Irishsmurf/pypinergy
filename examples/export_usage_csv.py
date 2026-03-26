@@ -29,7 +29,10 @@ def main():
     args = parser.parse_args()
 
     if not EMAIL or not PASSWORD:
-        print("Set PINERGY_EMAIL and PINERGY_PASSWORD environment variables.", file=sys.stderr)
+        print(
+            "Set PINERGY_EMAIL and PINERGY_PASSWORD environment variables.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     client = PinergyClient(EMAIL, PASSWORD)
@@ -45,13 +48,15 @@ def main():
     writer = csv.writer(sys.stdout)
     writer.writerow(["date", "kwh", "amount_eur", "co2_kg", "available"])
     for entry in entries:
-        writer.writerow([
-            entry.date.strftime("%Y-%m-%d"),
-            f"{entry.kwh:.4f}",
-            f"{entry.amount:.4f}",
-            f"{entry.co2:.4f}",
-            entry.available,
-        ])
+        writer.writerow(
+            [
+                entry.date.strftime("%Y-%m-%d"),
+                f"{entry.kwh:.4f}",
+                f"{entry.amount:.4f}",
+                f"{entry.co2:.4f}",
+                entry.available,
+            ]
+        )
 
 
 if __name__ == "__main__":
