@@ -55,6 +55,15 @@ def _make_client():
 # ---------------------------------------------------------------------------
 
 
+def test_client_enforces_https():
+    with pytest.raises(ValueError, match="Base URL must use HTTPS to prevent plaintext credential leakage: http://example.com"):
+        PinergyClient("user@example.com", "secret", base_url="http://example.com")
+
+def test_client_allows_localhost_http():
+    # Should not raise ValueError
+    PinergyClient("user@example.com", "secret", base_url="http://localhost:8080")
+    PinergyClient("user@example.com", "secret", base_url="http://127.0.0.1:8080")
+
 def test_client_repr_unauthenticated():
     client = _make_client()
     assert "unauthenticated" in repr(client)
