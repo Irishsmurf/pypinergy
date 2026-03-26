@@ -1,6 +1,5 @@
 """Shared pytest fixtures."""
 
-import pytest
 
 # ---------------------------------------------------------------------------
 # Fixture payloads — mirror real API responses
@@ -48,14 +47,38 @@ LOGIN_PAYLOAD = {
 USAGE_PAYLOAD = {
     "success": True,
     "day": [
-        {"available": True, "amount": 2.17, "kwh": 2.45, "co2": 0.0, "date": "1773446400"},
-        {"available": True, "amount": 1.80, "kwh": 2.10, "co2": 0.0, "date": "1773360000"},
+        {
+            "available": True,
+            "amount": 2.17,
+            "kwh": 2.45,
+            "co2": 0.0,
+            "date": "1773446400",
+        },
+        {
+            "available": True,
+            "amount": 1.80,
+            "kwh": 2.10,
+            "co2": 0.0,
+            "date": "1773360000",
+        },
     ],
     "week": [
-        {"available": True, "amount": 14.67, "kwh": 19.1, "co2": 0.0, "date": "1773014400"},
+        {
+            "available": True,
+            "amount": 14.67,
+            "kwh": 19.1,
+            "co2": 0.0,
+            "date": "1773014400",
+        },
     ],
     "month": [
-        {"available": True, "amount": 80.41, "kwh": 121.6, "co2": 0.0, "date": "1769904000"},
+        {
+            "available": True,
+            "amount": 80.41,
+            "kwh": 121.6,
+            "co2": 0.0,
+            "date": "1769904000",
+        },
     ],
 }
 

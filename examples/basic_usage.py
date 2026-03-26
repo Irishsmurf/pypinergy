@@ -37,7 +37,9 @@ def main():
     print("Last 7 days:")
     for entry in usage.day:
         marker = "<--" if entry == usage.day[0] else ""
-        print(f"  {entry.date:%Y-%m-%d}  {entry.kwh:5.2f} kWh  €{entry.amount:.2f}  {marker}")
+        print(
+            f"  {entry.date:%Y-%m-%d}  {entry.kwh:5.2f} kWh  €{entry.amount:.2f}  {marker}"
+        )
     print()
 
     # --- Compare ------------------------------------------------------------
