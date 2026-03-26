@@ -23,7 +23,9 @@ class PinergyAPIError(PinergyError):
         self.message = message
 
     def __repr__(self) -> str:
-        return f"PinergyAPIError(message={self.message!r}, error_code={self.error_code})"
+        return (
+            f"PinergyAPIError(message={self.message!r}, error_code={self.error_code})"
+        )
 
 
 class PinergyHTTPError(PinergyError):
