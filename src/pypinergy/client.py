@@ -74,13 +74,33 @@ class PinergyClient:
             )
 
         self._timeout = timeout
-        self._auth_token: Optional[str] = None
         self._session = _NoRedirectSession()
         self._session.headers.update({"User-Agent": _USER_AGENT})
+        self._internal_auth_token: Optional[str] = None
+        self._auth_token = None  # Use the property setter
 
     # ------------------------------------------------------------------
     # Session helpers
     # ------------------------------------------------------------------
+
+    @property
+    def _auth_token(self) -> Optional[str]:
+        return self._internal_auth_token
+
+    @_auth_token.setter
+    def _auth_token(self, value: Optional[str]) -> None:
+        """Set the auth token and automatically cache it in session headers.
+
+        Performance optimization: Pre-allocating persistent headers (e.g., `auth_token`)
+        via `session.headers.update()` is more efficient than passing them dynamically
+        via `headers=` kwargs on every request, avoiding repetitive dictionary
+        instantiation and merging in tight loops.
+        """
+        self._internal_auth_token = value
+        if value is None:
+            self._session.headers.pop("auth_token", None)
+        else:
+            self._session.headers.update({"auth_token": value})
 
     @property
     def is_authenticated(self) -> bool:
@@ -99,9 +119,9 @@ class PinergyClient:
         """Perform an authenticated GET and return the parsed JSON body."""
         self._ensure_auth()
         try:
+            # Performance optimization: auth_token is pre-cached in self._session.headers
             response = self._session.get(
                 self._url(path),
-                headers={"auth_token": self._auth_token},
                 timeout=self._timeout,
             )
             response.raise_for_status()
@@ -326,10 +346,10 @@ class PinergyClient:
             "os_version": os_version,
         }
         try:
+            # Performance optimization: auth_token is pre-cached in self._session.headers
             response = self._session.post(
                 self._url("/api/updatedevicetoken/"),
                 json=payload,
-                headers={"auth_token": self._auth_token},
                 timeout=self._timeout,
             )
             response.raise_for_status()
