@@ -83,6 +83,7 @@ def test_base_url_allows_http_localhost():
     # Should not raise
     PinergyClient("user@example.com", "pass", base_url="http://localhost:8080")
     PinergyClient("user@example.com", "pass", base_url="http://127.0.0.1:5000")
+    PinergyClient("user@example.com", "pass", base_url="http://[::1]:5000")
 
 
 def test_base_url_blocks_localhost_bypass():
