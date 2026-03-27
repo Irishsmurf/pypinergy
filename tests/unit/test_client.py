@@ -74,6 +74,22 @@ def test_client_does_not_store_plaintext_password():
     assert password not in client.__dict__.values()
 
 
+def test_base_url_requires_https_remote():
+    with pytest.raises(ValueError, match="base_url must use https://"):
+        PinergyClient("user@example.com", "pass", base_url="http://api.pinergy.ie")
+
+
+def test_base_url_allows_http_localhost():
+    # Should not raise
+    PinergyClient("user@example.com", "pass", base_url="http://localhost:8080")
+    PinergyClient("user@example.com", "pass", base_url="http://127.0.0.1:5000")
+
+
+def test_base_url_blocks_localhost_bypass():
+    with pytest.raises(ValueError, match="base_url must use https://"):
+        PinergyClient("user@example.com", "pass", base_url="http://localhost.example.com")
+
+
 # ---------------------------------------------------------------------------
 # Login
 # ---------------------------------------------------------------------------
