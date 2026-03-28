@@ -67,7 +67,11 @@ class PinergyClient:
         self._base_url = base_url.rstrip("/")
 
         parsed = urllib.parse.urlparse(self._base_url)
-        if parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
+        if parsed.scheme == "http" and parsed.hostname not in (
+            "localhost",
+            "127.0.0.1",
+            "::1",
+        ):
             raise ValueError(
                 "base_url must use https:// to prevent credential leakage "
                 "(except for localhost/127.0.0.1/::1)"
@@ -95,6 +99,13 @@ class PinergyClient:
     def _url(self, path: str) -> str:
         return f"{self._base_url}/{path.lstrip('/')}"
 
+    def _parse_json(self, response: requests.Response) -> dict:
+        """Helper to decode JSON and wrap decoding errors."""
+        try:
+            return response.json()
+        except ValueError as exc:
+            raise PinergyHTTPError("Failed to decode JSON response") from exc
+
     def _get(self, path: str) -> dict:
         """Perform an authenticated GET and return the parsed JSON body."""
         self._ensure_auth()
@@ -112,7 +123,7 @@ class PinergyClient:
         except requests.exceptions.RequestException as exc:
             raise PinergyHTTPError(str(exc)) from exc
 
-        data = response.json()
+        data = self._parse_json(response)
         _raise_for_api_error(data)
         return data
 
@@ -145,7 +156,7 @@ class PinergyClient:
         except requests.exceptions.RequestException as exc:
             raise PinergyHTTPError(str(exc)) from exc
 
-        data = response.json()
+        data = self._parse_json(response)
         if not data.get("success"):
             raise PinergyAuthError(
                 data.get("message", "Login failed") or "Login failed"
@@ -184,7 +195,7 @@ class PinergyClient:
         except requests.exceptions.RequestException as exc:
             raise PinergyHTTPError(str(exc)) from exc
 
-        data = response.json()
+        data = self._parse_json(response)
         return bool(data.get("success"))
 
     # ------------------------------------------------------------------
@@ -336,7 +347,7 @@ class PinergyClient:
         except requests.exceptions.RequestException as exc:
             raise PinergyHTTPError(str(exc)) from exc
 
-        data = response.json()
+        data = self._parse_json(response)
         _raise_for_api_error(data)
         return bool(data.get("success"))
 
@@ -358,7 +369,7 @@ class PinergyClient:
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
             raise PinergyHTTPError(str(exc)) from exc
-        return response.json()
+        return self._parse_json(response)
 
     def __repr__(self) -> str:
         auth_status = "authenticated" if self.is_authenticated else "unauthenticated"

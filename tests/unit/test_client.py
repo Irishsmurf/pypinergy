@@ -88,7 +88,9 @@ def test_base_url_allows_http_localhost():
 
 def test_base_url_blocks_localhost_bypass():
     with pytest.raises(ValueError, match="base_url must use https://"):
-        PinergyClient("user@example.com", "pass", base_url="http://localhost.example.com")
+        PinergyClient(
+            "user@example.com", "pass", base_url="http://localhost.example.com"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -406,6 +408,78 @@ def test_get_version():
     result = client.get_version()
     assert result["min_version"] == "3.0.0"
     assert not client.is_authenticated  # should NOT have triggered login
+
+
+# ---------------------------------------------------------------------------
+# JSON decode error propagation
+# ---------------------------------------------------------------------------
+
+
+@rsps_lib.activate
+def test_get_raises_http_error_on_invalid_json():
+    _add_login(rsps_lib)
+    rsps_lib.add(
+        rsps_lib.GET,
+        f"{BASE}/api/balance/",
+        body="<html>Bad Gateway</html>",
+        status=200,
+    )
+    client = _make_client()
+    with pytest.raises(PinergyHTTPError, match="Failed to decode JSON response"):
+        client.get_balance()
+
+
+@rsps_lib.activate
+def test_login_raises_http_error_on_invalid_json():
+    rsps_lib.add(
+        rsps_lib.POST,
+        f"{BASE}/api/login/",
+        body="<html>Bad Gateway</html>",
+        status=200,
+    )
+    client = _make_client()
+    with pytest.raises(PinergyHTTPError, match="Failed to decode JSON response"):
+        client.login()
+
+
+@rsps_lib.activate
+def test_check_email_raises_http_error_on_invalid_json():
+    rsps_lib.add(
+        rsps_lib.GET,
+        f"{BASE}/api/checkemail",
+        body="<html>Bad Gateway</html>",
+        status=200,
+    )
+    client = _make_client()
+    with pytest.raises(PinergyHTTPError, match="Failed to decode JSON response"):
+        client.check_email("user@example.com")
+
+
+@rsps_lib.activate
+def test_update_device_token_raises_http_error_on_invalid_json():
+    _add_login(rsps_lib)
+    rsps_lib.add(
+        rsps_lib.POST,
+        f"{BASE}/api/updatedevicetoken/",
+        body="<html>Bad Gateway</html>",
+        status=200,
+    )
+    client = _make_client()
+    with pytest.raises(PinergyHTTPError, match="Failed to decode JSON response"):
+        client.update_device_token("token")
+
+
+@rsps_lib.activate
+def test_get_version_raises_http_error_on_invalid_json():
+    rsps_lib.add(
+        rsps_lib.GET,
+        f"{BASE}/version.json",
+        body="<html>Bad Gateway</html>",
+        status=200,
+    )
+    client = _make_client()
+    with pytest.raises(PinergyHTTPError, match="Failed to decode JSON response"):
+        client.get_version()
 
 
 # ---------------------------------------------------------------------------
