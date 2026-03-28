@@ -21,6 +21,9 @@ def _parse_ts_pair(ts: Optional[str | int]) -> tuple[Optional[int], Optional[dat
     """Parse a timestamp into both its integer and datetime representations."""
     if ts is None or ts == "":
         return None, None
+    if ts == 0 or ts == "0":
+        # Performance optimization: Fast path for fallback zero timestamp
+        return 0, _EPOCH_UTC
 
     # Performance optimization: using try...except int(ts) is faster than
     # checking isinstance(ts, int) first on the happy path.
