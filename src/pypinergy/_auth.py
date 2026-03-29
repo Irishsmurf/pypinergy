@@ -12,4 +12,6 @@ def hash_password(password: str) -> str:
     Returns:
         Lowercase hex-encoded SHA-1 digest string.
     """
-    return hashlib.sha1(password.encode()).hexdigest()
+    # Use usedforsecurity=False to prevent crashes in strict FIPS-compliant
+    # environments, as the API mandates SHA-1 for authentication.
+    return hashlib.sha1(password.encode(), usedforsecurity=False).hexdigest()
