@@ -74,13 +74,29 @@ class PinergyClient:
             )
 
         self._timeout = timeout
-        self._auth_token: Optional[str] = None
         self._session = _NoRedirectSession()
         self._session.headers.update({"User-Agent": _USER_AGENT})
+        # Performance optimization: Managing _auth_token via property setter
+        # directly syncs it to self._session.headers, avoiding repetitive
+        # dictionary instantiations and merging on every API request.
+        self.__auth_token: Optional[str] = None
+        self._auth_token = None
 
     # ------------------------------------------------------------------
     # Session helpers
     # ------------------------------------------------------------------
+
+    @property
+    def _auth_token(self) -> Optional[str]:
+        return self.__auth_token
+
+    @_auth_token.setter
+    def _auth_token(self, value: Optional[str]) -> None:
+        self.__auth_token = value
+        if value is not None:
+            self._session.headers["auth_token"] = value
+        else:
+            self._session.headers.pop("auth_token", None)
 
     @property
     def is_authenticated(self) -> bool:
@@ -101,7 +117,6 @@ class PinergyClient:
         try:
             response = self._session.get(
                 self._url(path),
-                headers={"auth_token": self._auth_token},
                 timeout=self._timeout,
             )
             response.raise_for_status()
@@ -329,7 +344,6 @@ class PinergyClient:
             response = self._session.post(
                 self._url("/api/updatedevicetoken/"),
                 json=payload,
-                headers={"auth_token": self._auth_token},
                 timeout=self._timeout,
             )
             response.raise_for_status()
