@@ -22,6 +22,11 @@ def _parse_ts_pair(ts: Optional[str | int]) -> tuple[Optional[int], Optional[dat
     if ts is None or ts == "":
         return None, None
 
+    # Performance optimization: fast-path for missing/default values (0, "0")
+    # to bypass try...except and fromtimestamp overhead.
+    if ts == 0 or ts == "0":
+        return 0, _EPOCH_UTC
+
     # Performance optimization: using try...except int(ts) is faster than
     # checking isinstance(ts, int) first on the happy path.
     try:
