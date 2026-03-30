@@ -88,7 +88,9 @@ def test_base_url_allows_http_localhost():
 
 def test_base_url_blocks_localhost_bypass():
     with pytest.raises(ValueError, match="base_url must use https://"):
-        PinergyClient("user@example.com", "pass", base_url="http://localhost.example.com")
+        PinergyClient(
+            "user@example.com", "pass", base_url="http://localhost.example.com"
+        )
 
 
 # ---------------------------------------------------------------------------
