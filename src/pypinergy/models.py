@@ -19,6 +19,11 @@ _utc = timezone.utc
 
 def _parse_ts_pair(ts: Optional[str | int]) -> tuple[Optional[int], Optional[datetime]]:
     """Parse a timestamp into both its integer and datetime representations."""
+    # Performance optimization: Fast path for commonly occurring default values
+    # (0 or "0") to bypass parsing overhead and directly return cached constant.
+    if ts == 0 or ts == "0":
+        return 0, _EPOCH_UTC
+
     if ts is None or ts == "":
         return None, None
 
