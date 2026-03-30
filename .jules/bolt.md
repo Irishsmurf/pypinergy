@@ -5,3 +5,6 @@
 ## 2025-03-01 - Optimizing type coercion and module lookups
 **Learning:** Using `isinstance(val, type)` followed by parsing is often slower than EAFP (`try...except int(val)`) on the happy path. Additionally, accessing module-level attributes like `datetime.fromtimestamp` and `timezone.utc` inside hot parsing functions creates a bottleneck; caching these as module-level constants speeds up tight loops by avoiding repeated lookups.
 **Action:** Use `try...except` blocks directly instead of type checking before coercing in performance-critical paths, and cache frequently used functions/constants from imported modules at the module scope.
+## 2025-03-02 - Persistent Session Headers for Performance
+**Learning:** For `requests.Session` performance, pre-allocating persistent headers (e.g., `auth_token`) via `session.headers.update()` is more efficient than passing them dynamically via `headers=` kwargs on every request, avoiding repetitive dictionary instantiation and merging. Tests indicate avoiding dynamic headers speeds up `Session.get()` calls locally.
+**Action:** When a header like an auth token will be used in subsequent requests, add it to the `Session` directly rather than passing it inline as a kwarg each time.
