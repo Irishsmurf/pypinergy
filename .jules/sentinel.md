@@ -13,3 +13,8 @@
 **Vulnerability:** The API client permitted the use of insecure `http://` schema for its `base_url`, which would transmit API requests and custom authentication headers in plaintext.
 **Learning:** Security controls like HTTPS must be explicitly enforced in API clients, not just assumed by default. Furthermore, when providing exceptions for local development/testing environments, naive string matching (like checking if the URL starts with "http://localhost") can be bypassed via subdomains (e.g. `http://localhost.example.com`).
 **Prevention:** Always validate the `base_url` scheme and enforce `https://`. When whitelisting local testing environments, use a robust URL parsing library (`urllib.parse.urlparse`) to ensure that only exact hostnames like `localhost` or `127.0.0.1` are permitted.
+
+## 2024-05-27 - [FIPS Compliance]
+**Vulnerability:** Use of `hashlib.sha1` without the `usedforsecurity=False` flag can lead to application crashes in environments where strict FIPS (Federal Information Processing Standards) compliance is enforced.
+**Learning:** Even when hashing is used for non-security purposes or required by external APIs (like Pinergy's authentication which requires SHA-1), FIPS-compliant systems will block the creation of SHA-1 hashes unless explicitly instructed otherwise.
+**Prevention:** Always use `usedforsecurity=False` when calling `hashlib.md5()` or `hashlib.sha1()` if the hash is not being used for a critical security function or if it's required for compatibility with an external service.
