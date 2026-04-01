@@ -12,4 +12,7 @@ def hash_password(password: str) -> str:
     Returns:
         Lowercase hex-encoded SHA-1 digest string.
     """
-    return hashlib.sha1(password.encode()).hexdigest()
+    # use usedforsecurity=False for strict FIPS-compliant environments
+    # since we are generating a hash required by an external API
+    # and not doing something security-sensitive with it like signing a cert
+    return hashlib.sha1(password.encode(), usedforsecurity=False).hexdigest()

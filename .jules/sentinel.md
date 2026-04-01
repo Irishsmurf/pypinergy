@@ -13,3 +13,8 @@
 **Vulnerability:** The API client permitted the use of insecure `http://` schema for its `base_url`, which would transmit API requests and custom authentication headers in plaintext.
 **Learning:** Security controls like HTTPS must be explicitly enforced in API clients, not just assumed by default. Furthermore, when providing exceptions for local development/testing environments, naive string matching (like checking if the URL starts with "http://localhost") can be bypassed via subdomains (e.g. `http://localhost.example.com`).
 **Prevention:** Always validate the `base_url` scheme and enforce `https://`. When whitelisting local testing environments, use a robust URL parsing library (`urllib.parse.urlparse`) to ensure that only exact hostnames like `localhost` or `127.0.0.1` are permitted.
+
+## 2024-04-01 - [FIPS Compliance Failure via Unannotated SHA-1]
+**Vulnerability:** The `hash_password` function used `hashlib.sha1` without `usedforsecurity=False` to generate a hash required for an external API. In FIPS-compliant environments, SHA-1 is blocked when used for security purposes, which causes the application to crash even when the hash is just a dumb requirement of an external API.
+**Learning:** Python's `hashlib` in strict environments makes assumptions about the security intent of deprecated algorithms like MD5 or SHA-1. If an external API requires these hashes for non-critical functionality (e.g. legacy authentication handshakes), `hashlib` will block it unless explicitly told otherwise.
+**Prevention:** When using deprecated algorithms like `hashlib.sha1` or `hashlib.md5` to satisfy external API requirements, always explicitly specify `usedforsecurity=False` to ensure compatibility with FIPS environments.
