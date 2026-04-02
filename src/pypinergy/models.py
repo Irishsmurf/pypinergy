@@ -67,8 +67,8 @@ class User:
             name=d.get("name", ""),
             pinergy_id=d.get("pinergy_id", ""),
             mobile_number=d.get("mobile_number", ""),
-            sms_notifications=bool(d.get("sms_notifications", False)),
-            email_notifications=bool(d.get("email_notifications", False)),
+            sms_notifications=d.get("sms_notifications", False),
+            email_notifications=d.get("email_notifications", False),
             first_name=d.get("firstName", ""),
             last_name=d.get("lastName", ""),
         )
@@ -87,11 +87,11 @@ class House:
     @classmethod
     def _from_dict(cls, d: dict) -> "House":
         return cls(
-            type=int(d.get("type", 0)),
-            heating_type=int(d.get("heating_type", 0)),
-            bedroom_count=int(d.get("bedroom_count", 0)),
-            adult_count=int(d.get("adult_count", 0)),
-            children_count=int(d.get("children_count", 0)),
+            type=int(v) if (v := d.get("type")) is not None else 0,
+            heating_type=int(v) if (v := d.get("heating_type")) is not None else 0,
+            bedroom_count=int(v) if (v := d.get("bedroom_count")) is not None else 0,
+            adult_count=int(v) if (v := d.get("adult_count")) is not None else 0,
+            children_count=int(v) if (v := d.get("children_count")) is not None else 0,
         )
 
 
@@ -135,11 +135,11 @@ class LoginResponse:
         _cc_from_dict = CreditCard._from_dict
         return cls(
             auth_token=d["auth_token"],
-            is_legacy_meter=bool(d.get("is_legacy_meter", False)),
-            is_no_wan_meter=bool(d.get("is_no_wan_meter", False)),
-            is_level_pay=bool(d.get("is_level_pay", False)),
-            is_child=bool(d.get("is_child", False)),
-            is_business_connect=bool(d.get("is_business_connect", False)),
+            is_legacy_meter=d.get("is_legacy_meter", False),
+            is_no_wan_meter=d.get("is_no_wan_meter", False),
+            is_level_pay=d.get("is_level_pay", False),
+            is_child=d.get("is_child", False),
+            is_business_connect=d.get("is_business_connect", False),
             premises_number=d.get("premises_number", ""),
             account_type=d.get("account_type", ""),
             user=User._from_dict(d.get("user", {})),
@@ -171,12 +171,15 @@ class UsageEntry:
 
     @classmethod
     def _from_dict(cls, d: dict) -> "UsageEntry":
-        ts_int, dt = _parse_ts_pair(d.get("date", 0))
+        # Performance optimization: Omitting the default `0` allows the missing key
+        # to pass `None` to `_parse_ts_pair`, hitting its early-exit fast-path
+        # and avoiding unnecessary timezone instantiation.
+        ts_int, dt = _parse_ts_pair(d.get("date"))
         return cls(
-            available=bool(d.get("available", False)),
-            amount=float(d.get("amount", 0.0)),
-            kwh=float(d.get("kwh", 0.0)),
-            co2=float(d.get("co2", 0.0)),
+            available=d.get("available", False),
+            amount=float(v) if (v := d.get("amount")) is not None else 0.0,
+            kwh=float(v) if (v := d.get("kwh")) is not None else 0.0,
+            co2=float(v) if (v := d.get("co2")) is not None else 0.0,
             date_ts=ts_int or 0,
             # Re-use the constant instead of instantiating a new aware datetime per fallback
             date=dt or _EPOCH_UTC,
@@ -277,14 +280,16 @@ class BalanceResponse:
         lr_ts, lr_dt = _parse_ts_pair(d.get("last_reading"))
 
         return cls(
-            credit_balance=float(d.get("balance", 0.0)),
-            top_up_in_days=int(d.get("top_up_in_days", 0)),
-            pending_top_up=bool(d.get("pending_top_up", False)),
+            credit_balance=float(v) if (v := d.get("balance")) is not None else 0.0,
+            top_up_in_days=int(v) if (v := d.get("top_up_in_days")) is not None else 0,
+            pending_top_up=d.get("pending_top_up", False),
             pending_top_up_by=d.get("pending_top_up_by", ""),
-            last_top_up_amount=float(d.get("last_top_up_amount", 0.0)),
-            credit_low=bool(d.get("credit_low", False)),
-            emergency_credit=bool(d.get("emergency_credit", False)),
-            power_off=bool(d.get("power_off", False)),
+            last_top_up_amount=float(v)
+            if (v := d.get("last_top_up_amount")) is not None
+            else 0.0,
+            credit_low=d.get("credit_low", False),
+            emergency_credit=d.get("emergency_credit", False),
+            power_off=d.get("power_off", False),
             last_top_up_ts=ltu_ts,
             last_top_up_time=ltu_dt,
             last_reading_ts=lr_ts,
@@ -310,9 +315,11 @@ class ScheduledTopUp:
     @classmethod
     def _from_dict(cls, d: dict) -> "ScheduledTopUp":
         return cls(
-            current_user=bool(d.get("current_user", True)),
-            top_up_amount=float(d.get("top_up_amount", 0.0)),
-            top_up_day=int(d.get("top_up_day", 0)),
+            current_user=d.get("current_user", True),
+            top_up_amount=float(v)
+            if (v := d.get("top_up_amount")) is not None
+            else 0.0,
+            top_up_day=int(v) if (v := d.get("top_up_day")) is not None else 0,
             customer=d.get("customer", ""),
         )
 
@@ -350,8 +357,8 @@ class CompareValues:
     @classmethod
     def _from_dict(cls, d: dict) -> "CompareValues":
         return cls(
-            users_home=float(d.get("users_home", 0.0)),
-            average_home=float(d.get("average_home", 0.0)),
+            users_home=float(v) if (v := d.get("users_home")) is not None else 0.0,
+            average_home=float(v) if (v := d.get("average_home")) is not None else 0.0,
         )
 
 
@@ -367,7 +374,7 @@ class ComparePeriod:
     @classmethod
     def _from_dict(cls, d: dict) -> "ComparePeriod":
         return cls(
-            available=bool(d.get("available", False)),
+            available=d.get("available", False),
             euro=CompareValues._from_dict(d.get("euro", {})),
             kwh=CompareValues._from_dict(d.get("kwh", {})),
             co2=CompareValues._from_dict(d.get("co2", {})),
@@ -457,12 +464,16 @@ class DefaultsInfoResponse:
         return cls(
             house_types=[_ht_from_dict(x) for x in d.get("house_types", [])],
             heating_types=[_heat_from_dict(x) for x in d.get("heating_types", [])],
-            max_bedrooms=int(d.get("max_bedrooms", 0)),
-            default_bedrooms=int(d.get("default_bedrooms", 0)),
-            max_adults=int(d.get("max_adults", 0)),
-            default_adults=int(d.get("default_adults", 0)),
-            max_children=int(d.get("max_children", 0)),
-            default_children=int(d.get("default_children", 0)),
+            max_bedrooms=int(v) if (v := d.get("max_bedrooms")) is not None else 0,
+            default_bedrooms=int(v)
+            if (v := d.get("default_bedrooms")) is not None
+            else 0,
+            max_adults=int(v) if (v := d.get("max_adults")) is not None else 0,
+            default_adults=int(v) if (v := d.get("default_adults")) is not None else 0,
+            max_children=int(v) if (v := d.get("max_children")) is not None else 0,
+            default_children=int(v)
+            if (v := d.get("default_children")) is not None
+            else 0,
         )
 
 
@@ -484,9 +495,9 @@ class NotificationPreferences:
     @classmethod
     def _from_dict(cls, d: dict) -> "NotificationPreferences":
         return cls(
-            sms=bool(d.get("sms", False)),
-            email=bool(d.get("email", False)),
-            phone=bool(d.get("phone", False)),
-            should_show=int(d.get("should_show", 0)),
+            sms=d.get("sms", False),
+            email=d.get("email", False),
+            phone=d.get("phone", False),
+            should_show=int(v) if (v := d.get("should_show")) is not None else 0,
             should_show_message=d.get("should_show_message", ""),
         )
