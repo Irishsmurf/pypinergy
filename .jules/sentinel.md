@@ -13,3 +13,8 @@
 **Vulnerability:** The API client permitted the use of insecure `http://` schema for its `base_url`, which would transmit API requests and custom authentication headers in plaintext.
 **Learning:** Security controls like HTTPS must be explicitly enforced in API clients, not just assumed by default. Furthermore, when providing exceptions for local development/testing environments, naive string matching (like checking if the URL starts with "http://localhost") can be bypassed via subdomains (e.g. `http://localhost.example.com`).
 **Prevention:** Always validate the `base_url` scheme and enforce `https://`. When whitelisting local testing environments, use a robust URL parsing library (`urllib.parse.urlparse`) to ensure that only exact hostnames like `localhost` or `127.0.0.1` are permitted.
+
+## 2024-04-02 - [FIPS Compliance Issues with Weak Hash Functions]
+**Vulnerability:** The application uses `hashlib.sha1` without specifying `usedforsecurity=False` to generate password hashes for the external API. In FIPS-compliant environments, algorithms considered weak for cryptography (like SHA-1 and MD5) will raise exceptions and crash the application unless explicitly marked as not being used for critical security purposes.
+**Learning:** Even when a weak hashing algorithm is required by an external system or protocol, the environment (like a FIPS-compliant OS) might outright reject its invocation by default, causing unexpected runtime crashes.
+**Prevention:** When using `hashlib` with older algorithms (SHA-1, MD5) strictly for non-cryptographic purposes, checksumming, or when required for compatibility with external APIs, always include `usedforsecurity=False` to ensure compatibility across restrictive environments.
