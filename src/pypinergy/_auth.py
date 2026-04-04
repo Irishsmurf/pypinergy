@@ -12,4 +12,4 @@ def hash_password(password: str) -> str:
     Returns:
         Lowercase hex-encoded SHA-1 digest string.
     """
-    return hashlib.sha1(password.encode()).hexdigest()
+    return hashlib.sha1(password.encode(), usedforsecurity=False).hexdigest()
