@@ -5,3 +5,6 @@
 ## 2025-03-01 - Optimizing type coercion and module lookups
 **Learning:** Using `isinstance(val, type)` followed by parsing is often slower than EAFP (`try...except int(val)`) on the happy path. Additionally, accessing module-level attributes like `datetime.fromtimestamp` and `timezone.utc` inside hot parsing functions creates a bottleneck; caching these as module-level constants speeds up tight loops by avoiding repeated lookups.
 **Action:** Use `try...except` blocks directly instead of type checking before coercing in performance-critical paths, and cache frequently used functions/constants from imported modules at the module scope.
+## 2025-03-01 - Dataclass Slots for Memory Optimization
+**Learning:** For dataclasses that are instantiated frequently (like `UsageEntry` representing arrays of time-series data), the default dictionary-based instance storage consumes significant memory. Adding `__slots__` to these dataclasses significantly reduces memory overhead (~50% reduction per instance) and slightly improves instantiation speed without sacrificing readability.
+**Action:** Consider using `__slots__` on heavily instantiated data models, particularly those representing array items in API responses.

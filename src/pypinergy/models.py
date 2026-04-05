@@ -157,6 +157,8 @@ class LoginResponse:
 class UsageEntry:
     """A single aggregated usage period (day / week / month)."""
 
+    __slots__ = ("available", "amount", "kwh", "co2", "date_ts", "date")
+
     available: bool
     amount: float
     """Cost in euros (€)."""
