@@ -47,7 +47,7 @@ def _ts_to_dt(ts: Optional[str | int]) -> Optional[datetime]:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(slots=True)
 class User:
     """Authenticated user profile."""
 
@@ -74,7 +74,7 @@ class User:
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class House:
     """Property details associated with the account."""
 
@@ -95,7 +95,7 @@ class House:
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class CreditCard:
     """Saved payment card summary."""
 
@@ -112,7 +112,7 @@ class CreditCard:
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class LoginResponse:
     """Successful login payload."""
 
@@ -153,7 +153,7 @@ class LoginResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(slots=True)
 class UsageEntry:
     """A single aggregated usage period (day / week / month)."""
 
@@ -183,7 +183,7 @@ class UsageEntry:
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class UsageResponse:
     """Aggregated usage across day / week / month buckets."""
 
@@ -211,7 +211,7 @@ class UsageResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(slots=True)
 class LevelPayDailyValue:
     """Half-hourly label and kWh per tariff band."""
 
@@ -223,7 +223,7 @@ class LevelPayDailyValue:
         return cls(label=d.get("label", ""), day_kwh=d.get("daykWh", {}))
 
 
-@dataclass
+@dataclass(slots=True)
 class LevelPayUsageResponse:
     """Half-hourly interval data for level pay customers."""
 
@@ -249,7 +249,7 @@ class LevelPayUsageResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(slots=True)
 class BalanceResponse:
     """Current account balance and meter status."""
 
@@ -297,7 +297,7 @@ class BalanceResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(slots=True)
 class ScheduledTopUp:
     """A top-up scheduled for a fixed calendar day."""
 
@@ -317,7 +317,7 @@ class ScheduledTopUp:
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class ActiveTopUpsResponse:
     """Scheduled and automatic top-up configurations."""
 
@@ -340,7 +340,7 @@ class ActiveTopUpsResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(slots=True)
 class CompareValues:
     """Paired user vs. average-home figures for a metric."""
 
@@ -355,7 +355,7 @@ class CompareValues:
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class ComparePeriod:
     """Comparison data for a single period (day / week / month)."""
 
@@ -374,7 +374,7 @@ class ComparePeriod:
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class CompareResponse:
     """Comparison of this home vs. similar homes."""
 
@@ -396,7 +396,7 @@ class CompareResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(slots=True)
 class ConfigInfoResponse:
     """Valid top-up amounts and balance alert thresholds."""
 
@@ -415,7 +415,7 @@ class ConfigInfoResponse:
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class HouseType:
     id: int
     name: str
@@ -425,7 +425,7 @@ class HouseType:
         return cls(id=int(d["id"]), name=d["name"])
 
 
-@dataclass
+@dataclass(slots=True)
 class HeatingType:
     id: int
     name: str
@@ -435,7 +435,7 @@ class HeatingType:
         return cls(id=int(d["id"]), name=d["name"])
 
 
-@dataclass
+@dataclass(slots=True)
 class DefaultsInfoResponse:
     """Reference data for house and heating types."""
 
@@ -471,7 +471,7 @@ class DefaultsInfoResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(slots=True)
 class NotificationPreferences:
     """User notification channel preferences."""
 
