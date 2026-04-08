@@ -88,7 +88,9 @@ def test_base_url_allows_http_localhost():
 
 def test_base_url_blocks_localhost_bypass():
     with pytest.raises(ValueError, match="base_url must use https://"):
-        PinergyClient("user@example.com", "pass", base_url="http://localhost.example.com")
+        PinergyClient(
+            "user@example.com", "pass", base_url="http://localhost.example.com"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -213,6 +215,12 @@ def test_check_email_sends_header():
     client = _make_client()
     client.check_email("test@example.com")
     assert rsps_lib.calls[0].request.headers["email_address"] == "test@example.com"
+
+
+def test_check_email_rejects_crlf():
+    client = _make_client()
+    with pytest.raises(ValueError, match="Invalid characters in email address"):
+        client.check_email("test@example.com\r\nInjected-Header: true")
 
 
 # ---------------------------------------------------------------------------
