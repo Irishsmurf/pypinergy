@@ -88,7 +88,9 @@ def test_base_url_allows_http_localhost():
 
 def test_base_url_blocks_localhost_bypass():
     with pytest.raises(ValueError, match="base_url must use https://"):
-        PinergyClient("user@example.com", "pass", base_url="http://localhost.example.com")
+        PinergyClient(
+            "user@example.com", "pass", base_url="http://localhost.example.com"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -546,3 +548,12 @@ def test_get_raises_http_error_on_timeout():
     )
     with pytest.raises(PinergyHTTPError, match="Read timed out"):
         _make_client().get_balance()
+
+
+def test_check_email_rejects_crlf():
+    client = PinergyClient("test@example.com", "password")
+    with pytest.raises(ValueError, match="Invalid characters in email address"):
+        client.check_email("test@example.com\r\n")
+
+    with pytest.raises(ValueError, match="Invalid characters in email address"):
+        client.check_email("test@example.com\nInject: true")
