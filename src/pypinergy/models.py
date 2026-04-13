@@ -144,7 +144,7 @@ class LoginResponse:
             account_type=d.get("account_type", ""),
             user=User._from_dict(d.get("user", {})),
             house=House._from_dict(d.get("house", {})),
-            credit_cards=[_cc_from_dict(x) for x in d.get("credit_cards", [])],
+            credit_cards=[_cc_from_dict(x) for x in (d.get("credit_cards") or ())],
         )
 
 
@@ -156,6 +156,8 @@ class LoginResponse:
 @dataclass
 class UsageEntry:
     """A single aggregated usage period (day / week / month)."""
+
+    __slots__ = ("available", "amount", "kwh", "co2", "date_ts", "date")
 
     available: bool
     amount: float
@@ -200,9 +202,9 @@ class UsageResponse:
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _ue_from_dict = UsageEntry._from_dict
         return cls(
-            day=[_ue_from_dict(x) for x in d.get("day", [])],
-            week=[_ue_from_dict(x) for x in d.get("week", [])],
-            month=[_ue_from_dict(x) for x in d.get("month", [])],
+            day=[_ue_from_dict(x) for x in (d.get("day") or ())],
+            week=[_ue_from_dict(x) for x in (d.get("week") or ())],
+            month=[_ue_from_dict(x) for x in (d.get("month") or ())],
         )
 
 
@@ -214,6 +216,8 @@ class UsageResponse:
 @dataclass
 class LevelPayDailyValue:
     """Half-hourly label and kWh per tariff band."""
+
+    __slots__ = ("label", "day_kwh")
 
     label: str
     day_kwh: dict
@@ -238,9 +242,9 @@ class LevelPayUsageResponse:
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _lp_from_dict = LevelPayDailyValue._from_dict
         return cls(
-            labels=daily.get("labels", []),
-            flags=daily.get("flags", []),
-            values=[_lp_from_dict(x) for x in daily.get("values", [])],
+            labels=daily.get("labels") or [],
+            flags=daily.get("flags") or [],
+            values=[_lp_from_dict(x) for x in (daily.get("values") or ())],
         )
 
 
@@ -301,6 +305,8 @@ class BalanceResponse:
 class ScheduledTopUp:
     """A top-up scheduled for a fixed calendar day."""
 
+    __slots__ = ("current_user", "top_up_amount", "top_up_day", "customer")
+
     current_user: bool
     """False when this entry belongs to another resident on the same premises."""
     top_up_amount: float
@@ -330,8 +336,8 @@ class ActiveTopUpsResponse:
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _st_from_dict = ScheduledTopUp._from_dict
         return cls(
-            scheduled=[_st_from_dict(x) for x in d.get("scheduled", [])],
-            auto_top_ups=d.get("auto_top_ups", []),
+            scheduled=[_st_from_dict(x) for x in (d.get("scheduled") or ())],
+            auto_top_ups=d.get("auto_top_ups") or [],
         )
 
 
@@ -408,15 +414,16 @@ class ConfigInfoResponse:
     @classmethod
     def _from_dict(cls, d: dict) -> "ConfigInfoResponse":
         return cls(
-            thresholds=d.get("thresholds", []),
-            top_up_amounts=d.get("top_up_amounts", []),
-            auto_up_amounts=d.get("auto_up_amounts", []),
-            scheduled_top_up_amounts=d.get("scheduled_top_up_amounts", []),
+            thresholds=d.get("thresholds") or [],
+            top_up_amounts=d.get("top_up_amounts") or [],
+            auto_up_amounts=d.get("auto_up_amounts") or [],
+            scheduled_top_up_amounts=d.get("scheduled_top_up_amounts") or [],
         )
 
 
 @dataclass
 class HouseType:
+    __slots__ = ("id", "name")
     id: int
     name: str
 
@@ -427,6 +434,7 @@ class HouseType:
 
 @dataclass
 class HeatingType:
+    __slots__ = ("id", "name")
     id: int
     name: str
 
@@ -455,8 +463,8 @@ class DefaultsInfoResponse:
         _ht_from_dict = HouseType._from_dict
         _heat_from_dict = HeatingType._from_dict
         return cls(
-            house_types=[_ht_from_dict(x) for x in d.get("house_types", [])],
-            heating_types=[_heat_from_dict(x) for x in d.get("heating_types", [])],
+            house_types=[_ht_from_dict(x) for x in (d.get("house_types") or ())],
+            heating_types=[_heat_from_dict(x) for x in (d.get("heating_types") or ())],
             max_bedrooms=int(d.get("max_bedrooms", 0)),
             default_bedrooms=int(d.get("default_bedrooms", 0)),
             max_adults=int(d.get("max_adults", 0)),
