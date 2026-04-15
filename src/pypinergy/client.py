@@ -67,7 +67,11 @@ class PinergyClient:
         self._base_url = base_url.rstrip("/")
 
         parsed = urllib.parse.urlparse(self._base_url)
-        if parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
+        if parsed.scheme == "http" and parsed.hostname not in (
+            "localhost",
+            "127.0.0.1",
+            "::1",
+        ):
             raise ValueError(
                 "base_url must use https:// to prevent credential leakage "
                 "(except for localhost/127.0.0.1/::1)"

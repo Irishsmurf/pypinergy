@@ -157,6 +157,7 @@ class LoginResponse:
 class UsageEntry:
     """A single aggregated usage period (day / week / month)."""
 
+    __slots__ = ("available", "amount", "kwh", "co2", "date_ts", "date")
     available: bool
     amount: float
     """Cost in euros (€)."""
@@ -215,6 +216,7 @@ class UsageResponse:
 class LevelPayDailyValue:
     """Half-hourly label and kWh per tariff band."""
 
+    __slots__ = ("label", "day_kwh")
     label: str
     day_kwh: dict
 
@@ -301,6 +303,7 @@ class BalanceResponse:
 class ScheduledTopUp:
     """A top-up scheduled for a fixed calendar day."""
 
+    __slots__ = ("current_user", "top_up_amount", "top_up_day", "customer")
     current_user: bool
     """False when this entry belongs to another resident on the same premises."""
     top_up_amount: float
@@ -417,6 +420,7 @@ class ConfigInfoResponse:
 
 @dataclass
 class HouseType:
+    __slots__ = ("id", "name")
     id: int
     name: str
 
@@ -427,6 +431,7 @@ class HouseType:
 
 @dataclass
 class HeatingType:
+    __slots__ = ("id", "name")
     id: int
     name: str
 
