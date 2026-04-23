@@ -215,6 +215,12 @@ def test_check_email_sends_header():
     assert rsps_lib.calls[0].request.headers["email_address"] == "test@example.com"
 
 
+def test_check_email_rejects_newlines():
+    client = _make_client()
+    with pytest.raises(ValueError, match="Invalid characters in email address"):
+        client.check_email("test\r\nInjected-Header: true@example.com")
+
+
 # ---------------------------------------------------------------------------
 # get_usage
 # ---------------------------------------------------------------------------
