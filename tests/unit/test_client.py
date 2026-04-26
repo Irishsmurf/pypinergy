@@ -215,6 +215,16 @@ def test_check_email_sends_header():
     assert rsps_lib.calls[0].request.headers["email_address"] == "test@example.com"
 
 
+def test_check_email_rejects_crlf():
+    client = _make_client()
+    with pytest.raises(ValueError, match="Email cannot contain newline characters"):
+        client.check_email("test@example.com\r\nInjected-Header: true")
+    with pytest.raises(ValueError, match="Email cannot contain newline characters"):
+        client.check_email("test@example.com\nInjected-Header: true")
+    with pytest.raises(ValueError, match="Email cannot contain newline characters"):
+        client.check_email("test@example.com\rInjected-Header: true")
+
+
 # ---------------------------------------------------------------------------
 # get_usage
 # ---------------------------------------------------------------------------
