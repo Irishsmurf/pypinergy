@@ -4,4 +4,6 @@
 
 ## 2025-03-01 - Optimizing type coercion and module lookups
 **Learning:** Using `isinstance(val, type)` followed by parsing is often slower than EAFP (`try...except int(val)`) on the happy path. Additionally, accessing module-level attributes like `datetime.fromtimestamp` and `timezone.utc` inside hot parsing functions creates a bottleneck; caching these as module-level constants speeds up tight loops by avoiding repeated lookups.
-**Action:** Use `try...except` blocks directly instead of type checking before coercing in performance-critical paths, and cache frequently used functions/constants from imported modules at the module scope.
+**Action:** Use `try...except` blocks directly instead of type checking before coercing in performance-critical paths, and cache frequently used functions/constants from imported modules at the module scope.## 2025-05-19 - Optimizing mutable collection defaults
+**Learning:** In Python, providing a constant literal default argument to dict.get() (e.g., `d.get('key', 0)`) has virtually zero overhead. However, mutable collection literals like `d.get('key', [])` or `{}` allocate a new object every time the expression is evaluated. In high-throughput loops parsing API responses, avoiding these allocations on the happy path with `d.get(key) or []` or `d.get(key) or {}` improves performance.
+**Action:** Use `d.get(key) or []` and `d.get(key) or {}` instead of `d.get(key, [])` and `d.get(key, {})` inside models `_from_dict` when extracting lists and objects.
