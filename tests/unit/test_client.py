@@ -88,7 +88,9 @@ def test_base_url_allows_http_localhost():
 
 def test_base_url_blocks_localhost_bypass():
     with pytest.raises(ValueError, match="base_url must use https://"):
-        PinergyClient("user@example.com", "pass", base_url="http://localhost.example.com")
+        PinergyClient(
+            "user@example.com", "pass", base_url="http://localhost.example.com"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -200,6 +202,12 @@ def test_check_email_not_registered():
     )
     client = _make_client()
     assert client.check_email("nobody@example.com") is False
+
+
+def test_check_email_crlf():
+    client = _make_client()
+    with pytest.raises(ValueError, match="newline"):
+        client.check_email("test@example.com\r\nInject: true")
 
 
 @rsps_lib.activate
