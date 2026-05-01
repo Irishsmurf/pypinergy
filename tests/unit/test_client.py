@@ -215,6 +215,12 @@ def test_check_email_sends_header():
     assert rsps_lib.calls[0].request.headers["email_address"] == "test@example.com"
 
 
+def test_check_email_rejects_crlf():
+    client = _make_client()
+    with pytest.raises(ValueError, match="CRLF"):
+        client.check_email("test\r\nBad-Header: value")
+
+
 # ---------------------------------------------------------------------------
 # get_usage
 # ---------------------------------------------------------------------------
