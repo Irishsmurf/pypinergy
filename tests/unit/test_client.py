@@ -546,3 +546,9 @@ def test_get_raises_http_error_on_timeout():
     )
     with pytest.raises(PinergyHTTPError, match="Read timed out"):
         _make_client().get_balance()
+
+def test_check_email_crlf_rejection():
+    """Verify that CRLF characters in email are rejected before the API call."""
+    client = _make_client()
+    with pytest.raises(ValueError, match="Invalid characters in email address"):
+        client.check_email("test@example.com\r\nBadHeader: malicious")
