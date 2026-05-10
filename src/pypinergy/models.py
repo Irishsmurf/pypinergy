@@ -9,6 +9,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import List, Optional
+import sys
+
+_DATACLASS_KWARGS = {'slots': True} if sys.version_info >= (3, 10) else {}
 
 _EPOCH_UTC = datetime.fromtimestamp(0, tz=timezone.utc)
 
@@ -47,7 +50,7 @@ def _ts_to_dt(ts: Optional[str | int]) -> Optional[datetime]:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class User:
     """Authenticated user profile."""
 
@@ -74,7 +77,7 @@ class User:
         )
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class House:
     """Property details associated with the account."""
 
@@ -95,7 +98,7 @@ class House:
         )
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class CreditCard:
     """Saved payment card summary."""
 
@@ -112,7 +115,7 @@ class CreditCard:
         )
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class LoginResponse:
     """Successful login payload."""
 
@@ -142,9 +145,9 @@ class LoginResponse:
             is_business_connect=bool(d.get("is_business_connect", False)),
             premises_number=d.get("premises_number", ""),
             account_type=d.get("account_type", ""),
-            user=User._from_dict(d.get("user", {})),
-            house=House._from_dict(d.get("house", {})),
-            credit_cards=[_cc_from_dict(x) for x in d.get("credit_cards", [])],
+            user=User._from_dict(d.get("user") or {}),
+            house=House._from_dict(d.get("house") or {}),
+            credit_cards=[_cc_from_dict(x) for x in (d.get("credit_cards") or ())],
         )
 
 
@@ -153,7 +156,7 @@ class LoginResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class UsageEntry:
     """A single aggregated usage period (day / week / month)."""
 
@@ -183,7 +186,7 @@ class UsageEntry:
         )
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class UsageResponse:
     """Aggregated usage across day / week / month buckets."""
 
@@ -200,9 +203,9 @@ class UsageResponse:
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _ue_from_dict = UsageEntry._from_dict
         return cls(
-            day=[_ue_from_dict(x) for x in d.get("day", [])],
-            week=[_ue_from_dict(x) for x in d.get("week", [])],
-            month=[_ue_from_dict(x) for x in d.get("month", [])],
+            day=[_ue_from_dict(x) for x in (d.get("day") or ())],
+            week=[_ue_from_dict(x) for x in (d.get("week") or ())],
+            month=[_ue_from_dict(x) for x in (d.get("month") or ())],
         )
 
 
@@ -211,7 +214,7 @@ class UsageResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class LevelPayDailyValue:
     """Half-hourly label and kWh per tariff band."""
 
@@ -220,10 +223,10 @@ class LevelPayDailyValue:
 
     @classmethod
     def _from_dict(cls, d: dict) -> "LevelPayDailyValue":
-        return cls(label=d.get("label", ""), day_kwh=d.get("daykWh", {}))
+        return cls(label=d.get("label", ""), day_kwh=d.get("daykWh") or {})
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class LevelPayUsageResponse:
     """Half-hourly interval data for level pay customers."""
 
@@ -233,14 +236,14 @@ class LevelPayUsageResponse:
 
     @classmethod
     def _from_dict(cls, d: dict) -> "LevelPayUsageResponse":
-        daily = d.get("usageData", {}).get("daily", {})
+        daily = (d.get("usageData") or {}).get("daily") or {}
         # Performance optimization: List comprehension with locally cached
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _lp_from_dict = LevelPayDailyValue._from_dict
         return cls(
-            labels=daily.get("labels", []),
-            flags=daily.get("flags", []),
-            values=[_lp_from_dict(x) for x in daily.get("values", [])],
+            labels=daily.get("labels") or [],
+            flags=daily.get("flags") or [],
+            values=[_lp_from_dict(x) for x in (daily.get("values") or ())],
         )
 
 
@@ -249,7 +252,7 @@ class LevelPayUsageResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class BalanceResponse:
     """Current account balance and meter status."""
 
@@ -297,7 +300,7 @@ class BalanceResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class ScheduledTopUp:
     """A top-up scheduled for a fixed calendar day."""
 
@@ -317,7 +320,7 @@ class ScheduledTopUp:
         )
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class ActiveTopUpsResponse:
     """Scheduled and automatic top-up configurations."""
 
@@ -330,8 +333,8 @@ class ActiveTopUpsResponse:
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _st_from_dict = ScheduledTopUp._from_dict
         return cls(
-            scheduled=[_st_from_dict(x) for x in d.get("scheduled", [])],
-            auto_top_ups=d.get("auto_top_ups", []),
+            scheduled=[_st_from_dict(x) for x in (d.get("scheduled") or ())],
+            auto_top_ups=d.get("auto_top_ups") or [],
         )
 
 
@@ -340,7 +343,7 @@ class ActiveTopUpsResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class CompareValues:
     """Paired user vs. average-home figures for a metric."""
 
@@ -355,7 +358,7 @@ class CompareValues:
         )
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class ComparePeriod:
     """Comparison data for a single period (day / week / month)."""
 
@@ -368,13 +371,13 @@ class ComparePeriod:
     def _from_dict(cls, d: dict) -> "ComparePeriod":
         return cls(
             available=bool(d.get("available", False)),
-            euro=CompareValues._from_dict(d.get("euro", {})),
-            kwh=CompareValues._from_dict(d.get("kwh", {})),
-            co2=CompareValues._from_dict(d.get("co2", {})),
+            euro=CompareValues._from_dict(d.get("euro") or {}),
+            kwh=CompareValues._from_dict(d.get("kwh") or {}),
+            co2=CompareValues._from_dict(d.get("co2") or {}),
         )
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class CompareResponse:
     """Comparison of this home vs. similar homes."""
 
@@ -385,9 +388,9 @@ class CompareResponse:
     @classmethod
     def _from_dict(cls, d: dict) -> "CompareResponse":
         return cls(
-            day=ComparePeriod._from_dict(d.get("day", {})),
-            week=ComparePeriod._from_dict(d.get("week", {})),
-            month=ComparePeriod._from_dict(d.get("month", {})),
+            day=ComparePeriod._from_dict(d.get("day") or {}),
+            week=ComparePeriod._from_dict(d.get("week") or {}),
+            month=ComparePeriod._from_dict(d.get("month") or {}),
         )
 
 
@@ -396,7 +399,7 @@ class CompareResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class ConfigInfoResponse:
     """Valid top-up amounts and balance alert thresholds."""
 
@@ -408,14 +411,14 @@ class ConfigInfoResponse:
     @classmethod
     def _from_dict(cls, d: dict) -> "ConfigInfoResponse":
         return cls(
-            thresholds=d.get("thresholds", []),
-            top_up_amounts=d.get("top_up_amounts", []),
-            auto_up_amounts=d.get("auto_up_amounts", []),
-            scheduled_top_up_amounts=d.get("scheduled_top_up_amounts", []),
+            thresholds=d.get("thresholds") or [],
+            top_up_amounts=d.get("top_up_amounts") or [],
+            auto_up_amounts=d.get("auto_up_amounts") or [],
+            scheduled_top_up_amounts=d.get("scheduled_top_up_amounts") or [],
         )
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class HouseType:
     id: int
     name: str
@@ -425,7 +428,7 @@ class HouseType:
         return cls(id=int(d["id"]), name=d["name"])
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class HeatingType:
     id: int
     name: str
@@ -435,7 +438,7 @@ class HeatingType:
         return cls(id=int(d["id"]), name=d["name"])
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class DefaultsInfoResponse:
     """Reference data for house and heating types."""
 
@@ -455,8 +458,8 @@ class DefaultsInfoResponse:
         _ht_from_dict = HouseType._from_dict
         _heat_from_dict = HeatingType._from_dict
         return cls(
-            house_types=[_ht_from_dict(x) for x in d.get("house_types", [])],
-            heating_types=[_heat_from_dict(x) for x in d.get("heating_types", [])],
+            house_types=[_ht_from_dict(x) for x in (d.get("house_types") or ())],
+            heating_types=[_heat_from_dict(x) for x in (d.get("heating_types") or ())],
             max_bedrooms=int(d.get("max_bedrooms", 0)),
             default_bedrooms=int(d.get("default_bedrooms", 0)),
             max_adults=int(d.get("max_adults", 0)),
@@ -471,7 +474,7 @@ class DefaultsInfoResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class NotificationPreferences:
     """User notification channel preferences."""
 
