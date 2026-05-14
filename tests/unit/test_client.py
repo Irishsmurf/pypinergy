@@ -190,6 +190,12 @@ def test_check_email_registered():
     assert client.check_email("user@example.com") is True
 
 
+def test_check_email_crlf_injection():
+    client = _make_client()
+    with pytest.raises(ValueError, match="cannot contain newline characters"):
+        client.check_email("test\r\nInject: yes")
+
+
 @rsps_lib.activate
 def test_check_email_not_registered():
     rsps_lib.add(

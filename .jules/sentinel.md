@@ -13,3 +13,9 @@
 **Vulnerability:** The API client permitted the use of insecure `http://` schema for its `base_url`, which would transmit API requests and custom authentication headers in plaintext.
 **Learning:** Security controls like HTTPS must be explicitly enforced in API clients, not just assumed by default. Furthermore, when providing exceptions for local development/testing environments, naive string matching (like checking if the URL starts with "http://localhost") can be bypassed via subdomains (e.g. `http://localhost.example.com`).
 **Prevention:** Always validate the `base_url` scheme and enforce `https://`. When whitelisting local testing environments, use a robust URL parsing library (`urllib.parse.urlparse`) to ensure that only exact hostnames like `localhost` or `127.0.0.1` are permitted.
+
+## 2024-05-14 - HTTP Header Injection (CRLF) in check_email
+
+**Vulnerability:** User-controlled input (`email`) in `PinergyClient.check_email` was being passed directly into the `headers` dict for a `requests.get` call without any sanitization. This allowed HTTP Header Injection (CRLF).
+**Learning:** Even though modern HTTP libraries like `requests` may block CRLF injection at the transport level, passing unsanitized user input into HTTP headers is dangerous and can lead to unhandled application crashes or confusing tracebacks.
+**Prevention:** Always explicitly validate and sanitize user inputs that are mapped to HTTP headers at the application's boundaries.
