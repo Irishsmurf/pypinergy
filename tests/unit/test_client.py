@@ -546,3 +546,23 @@ def test_get_raises_http_error_on_timeout():
     )
     with pytest.raises(PinergyHTTPError, match="Read timed out"):
         _make_client().get_balance()
+
+
+def test_crlf_injection_in_check_email():
+    client = _make_client()
+    with pytest.raises(ValueError, match="Invalid newline characters in email_address"):
+        client.check_email("test@example.com\r\nInject: Header")
+
+
+def test_crlf_injection_in_auth_token_get():
+    client = _make_client()
+    client._auth_token = "invalid\r\nInject: Token"
+    with pytest.raises(ValueError, match="Invalid newline characters in auth_token"):
+        client.get_balance()
+
+
+def test_crlf_injection_in_auth_token_post():
+    client = _make_client()
+    client._auth_token = "invalid\r\nInject: Token"
+    with pytest.raises(ValueError, match="Invalid newline characters in auth_token"):
+        client.update_device_token("my-token")

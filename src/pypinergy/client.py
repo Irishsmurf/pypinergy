@@ -98,6 +98,8 @@ class PinergyClient:
     def _get(self, path: str) -> dict:
         """Perform an authenticated GET and return the parsed JSON body."""
         self._ensure_auth()
+        if "\n" in self._auth_token or "\r" in self._auth_token:
+            raise ValueError("Invalid newline characters in auth_token")
         try:
             response = self._session.get(
                 self._url(path),
@@ -174,6 +176,8 @@ class PinergyClient:
         Returns:
             True if the address is registered.
         """
+        if "\n" in email or "\r" in email:
+            raise ValueError("Invalid newline characters in email_address")
         try:
             response = self._session.get(
                 self._url("/api/checkemail"),
@@ -325,6 +329,8 @@ class PinergyClient:
             "device_type": device_type,
             "os_version": os_version,
         }
+        if "\n" in self._auth_token or "\r" in self._auth_token:
+            raise ValueError("Invalid newline characters in auth_token")
         try:
             response = self._session.post(
                 self._url("/api/updatedevicetoken/"),
