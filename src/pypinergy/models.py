@@ -6,11 +6,13 @@ a :class:`datetime.datetime` (UTC, ``*_dt``).
 
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import List, Optional
 
 _EPOCH_UTC = datetime.fromtimestamp(0, tz=timezone.utc)
+_DATACLASS_KWARGS = {'slots': True} if sys.version_info >= (3, 10) else {}
 
 # Cache module-level constants for faster instantiation inside tight loops
 _fromtimestamp = datetime.fromtimestamp
@@ -153,7 +155,7 @@ class LoginResponse:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(**_DATACLASS_KWARGS)
 class UsageEntry:
     """A single aggregated usage period (day / week / month)."""
 
