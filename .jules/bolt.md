@@ -5,3 +5,6 @@
 ## 2025-03-01 - Optimizing type coercion and module lookups
 **Learning:** Using `isinstance(val, type)` followed by parsing is often slower than EAFP (`try...except int(val)`) on the happy path. Additionally, accessing module-level attributes like `datetime.fromtimestamp` and `timezone.utc` inside hot parsing functions creates a bottleneck; caching these as module-level constants speeds up tight loops by avoiding repeated lookups.
 **Action:** Use `try...except` blocks directly instead of type checking before coercing in performance-critical paths, and cache frequently used functions/constants from imported modules at the module scope.
+## 2024-05-15 - Dictionary get() defaults allocate objects on every call
+**Learning:** Using mutable defaults like `d.get('key', [])` or `d.get('key', {})` allocates a new list or dictionary every time the expression evaluates. For list comprehensions, this allocation can add ~12-30% overhead when iterating arrays in time-series data.
+**Action:** Use `d.get('key') or []` for direct assignments, `d.get('key') or {}` for dicts, and `(d.get('key') or ())` for list comprehensions. The empty tuple `()` is a CPython singleton and avoids allocation entirely.
