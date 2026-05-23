@@ -202,6 +202,12 @@ def test_check_email_not_registered():
     assert client.check_email("nobody@example.com") is False
 
 
+def test_check_email_rejects_crlf():
+    client = _make_client()
+    with pytest.raises(ValueError, match="invalid characters"):
+        client.check_email("test@example.com\r\nInjected-Header: true")
+
+
 @rsps_lib.activate
 def test_check_email_sends_header():
     rsps_lib.add(
