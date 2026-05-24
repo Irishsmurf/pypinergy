@@ -174,6 +174,8 @@ class PinergyClient:
         Returns:
             True if the address is registered.
         """
+        if "\r" in email or "\n" in email:
+            raise ValueError("Invalid email format")
         try:
             response = self._session.get(
                 self._url("/api/checkemail"),
