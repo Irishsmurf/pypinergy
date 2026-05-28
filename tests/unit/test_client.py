@@ -546,3 +546,8 @@ def test_get_raises_http_error_on_timeout():
     )
     with pytest.raises(PinergyHTTPError, match="Read timed out"):
         _make_client().get_balance()
+
+def test_check_email_rejects_crlf():
+    client = _make_client()
+    with pytest.raises(ValueError, match="Invalid newline character in email address"):
+        client.check_email("user@example.com\r\nInjected: True")
