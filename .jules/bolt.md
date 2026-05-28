@@ -9,3 +9,7 @@
 ## 2024-05-06 - Memory Optimization for Heavy API Payloads
 **Learning:** For Python 3.10+, using the `slots=True` parameter on heavily instantiated `@dataclass` API models significantly reduces memory footprint (from ~296 bytes to ~80 bytes per instance) and slightly improves instantiation speed by avoiding dynamic `__dict__` allocations. This is highly relevant for wrapping APIs that return large series of metrics.
 **Action:** Always conditionally use `_DATACLASS_KWARGS = {'slots': True} if sys.version_info >= (3, 10) else {}` and apply it to `@dataclass` definitions that will be instantiated hundreds or thousands of times.
+
+## 2024-05-28 - Fast empty collections with `or ()` and `or {}`
+**Learning:** Using `d.get("key", [])` or `d.get("key", {})` allocates a new empty list or dict object every time it is evaluated if the key is missing. Additionally, if the key is present but the value is explicitly `None`, this pattern incorrectly returns `None` and raises `TypeError` when iterating or calling nested `.get()`.
+**Action:** Use `(d.get("key") or ())` inside list comprehensions and `d.get("key") or {}` for dictionaries to prevent both unnecessary object allocations (by using Python's empty tuple singleton `()`) and to handle explicit `None` values safely. Be mindful of operator precedence: nested `.get()` calls need `(d.get("key") or {}).get("next") or {}`.
