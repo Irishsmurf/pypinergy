@@ -13,3 +13,8 @@
 **Vulnerability:** The API client permitted the use of insecure `http://` schema for its `base_url`, which would transmit API requests and custom authentication headers in plaintext.
 **Learning:** Security controls like HTTPS must be explicitly enforced in API clients, not just assumed by default. Furthermore, when providing exceptions for local development/testing environments, naive string matching (like checking if the URL starts with "http://localhost") can be bypassed via subdomains (e.g. `http://localhost.example.com`).
 **Prevention:** Always validate the `base_url` scheme and enforce `https://`. When whitelisting local testing environments, use a robust URL parsing library (`urllib.parse.urlparse`) to ensure that only exact hostnames like `localhost` or `127.0.0.1` are permitted.
+
+## 2025-05-29 - Header Injection in Custom Headers
+**Vulnerability:** The `check_email` function passed user input (`email`) directly into a custom HTTP header (`email_address`) without sanitization. An attacker could provide a value with CRLF (`\r\n`) to inject arbitrary HTTP headers into the outbound request, which might lead to SSRF or header injection issues.
+**Learning:** `requests` will typically reject invalid headers natively and raise an exception like `InvalidHeader`, but it's important to explicitly catch or prevent these errors at the application boundary for custom headers based on user input to avoid exposing `InvalidHeader` or `PinergyHTTPError` directly and allowing unexpected behaviors.
+**Prevention:** Always validate and sanitize user input that is passed into custom HTTP headers, explicitly rejecting newline characters (`\r` and `\n`) before the HTTP client attempts the request.
