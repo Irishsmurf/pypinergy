@@ -13,3 +13,8 @@
 **Vulnerability:** The API client permitted the use of insecure `http://` schema for its `base_url`, which would transmit API requests and custom authentication headers in plaintext.
 **Learning:** Security controls like HTTPS must be explicitly enforced in API clients, not just assumed by default. Furthermore, when providing exceptions for local development/testing environments, naive string matching (like checking if the URL starts with "http://localhost") can be bypassed via subdomains (e.g. `http://localhost.example.com`).
 **Prevention:** Always validate the `base_url` scheme and enforce `https://`. When whitelisting local testing environments, use a robust URL parsing library (`urllib.parse.urlparse`) to ensure that only exact hostnames like `localhost` or `127.0.0.1` are permitted.
+
+## 2024-05-30 - Prevent HTTP Header Injection (CRLF) in Custom Headers
+**Vulnerability:** The `check_email` endpoint passes unvalidated user input directly into a custom `email_address` HTTP header, relying on `requests` exceptions which causes an internal server error instead of a clean validation error.
+**Learning:** For Pypinergy, when user input is passed directly into custom HTTP headers (such as `email_address`), relying solely on the `requests` library's implicit `InvalidHeader` exception is insufficient and causes ugly stack traces.
+**Prevention:** Explicitly sanitize the input at the application boundary to reject newline characters (`\r`, `\n`) and raise `ValueError` before creating the HTTP request.
