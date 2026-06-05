@@ -174,6 +174,10 @@ class PinergyClient:
         Returns:
             True if the address is registered.
         """
+        # Security: explicitly reject newlines to prevent HTTP header injection
+        if "\r" in email or "\n" in email:
+            raise ValueError("Invalid email format: contains newline characters")
+
         try:
             response = self._session.get(
                 self._url("/api/checkemail"),
