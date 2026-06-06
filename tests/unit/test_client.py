@@ -498,6 +498,12 @@ def test_login_raises_http_error_on_connection_error():
         _make_client().login()
 
 
+def test_check_email_rejects_newlines():
+    client = _make_client()
+    with pytest.raises(ValueError, match="Invalid email: contains newline characters"):
+        client.check_email("user@example.com\r\nEvil-Header: true")
+
+
 @rsps_lib.activate
 def test_check_email_raises_http_error_on_connection_error():
     """check_email() RequestException branch (lines 164-165)."""
