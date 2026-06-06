@@ -9,3 +9,7 @@
 ## 2024-05-06 - Memory Optimization for Heavy API Payloads
 **Learning:** For Python 3.10+, using the `slots=True` parameter on heavily instantiated `@dataclass` API models significantly reduces memory footprint (from ~296 bytes to ~80 bytes per instance) and slightly improves instantiation speed by avoiding dynamic `__dict__` allocations. This is highly relevant for wrapping APIs that return large series of metrics.
 **Action:** Always conditionally use `_DATACLASS_KWARGS = {'slots': True} if sys.version_info >= (3, 10) else {}` and apply it to `@dataclass` definitions that will be instantiated hundreds or thousands of times.
+
+## 2025-03-02 - Memory allocation for default values in `dict.get()`
+**Learning:** In Python, passing a mutable collection literal (like `[]` or `{}`) as the default argument to `dict.get(key, [])` allocates a new object every time the line is evaluated, even if the key exists. In parsing large arrays, this can cause significant unnecessary overhead. Using `d.get(key) or []` (or `()` for comprehensions) skips this allocation on the happy path.
+**Action:** Always use `or []`, `or {}` or `or ()` instead of literal default values in `dict.get()` when dealing with performance-critical code or parsing large API payloads.
