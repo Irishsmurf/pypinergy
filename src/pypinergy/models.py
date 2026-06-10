@@ -145,9 +145,9 @@ class LoginResponse:
             is_business_connect=bool(d.get("is_business_connect", False)),
             premises_number=d.get("premises_number", ""),
             account_type=d.get("account_type", ""),
-            user=User._from_dict(d.get("user", {})),
-            house=House._from_dict(d.get("house", {})),
-            credit_cards=[_cc_from_dict(x) for x in d.get("credit_cards", [])],
+            user=User._from_dict(d.get("user") or {}),
+            house=House._from_dict(d.get("house") or {}),
+            credit_cards=[_cc_from_dict(x) for x in (d.get("credit_cards") or ())],
         )
 
 
@@ -190,6 +190,10 @@ class UsageEntry:
 class UsageResponse:
     """Aggregated usage across day / week / month buckets."""
 
+    # Performance optimization note: List comprehension with locally cached
+    # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
+    # We also use (d.get(key) or ()) to avoid allocating a new list on the happy path if the key has a falsy value.
+
     day: List[UsageEntry]
     """Last 7 days — one entry per day."""
     week: List[UsageEntry]
@@ -203,9 +207,9 @@ class UsageResponse:
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _ue_from_dict = UsageEntry._from_dict
         return cls(
-            day=[_ue_from_dict(x) for x in d.get("day", [])],
-            week=[_ue_from_dict(x) for x in d.get("week", [])],
-            month=[_ue_from_dict(x) for x in d.get("month", [])],
+            day=[_ue_from_dict(x) for x in (d.get("day") or ())],
+            week=[_ue_from_dict(x) for x in (d.get("week") or ())],
+            month=[_ue_from_dict(x) for x in (d.get("month") or ())],
         )
 
 
@@ -236,14 +240,14 @@ class LevelPayUsageResponse:
 
     @classmethod
     def _from_dict(cls, d: dict) -> "LevelPayUsageResponse":
-        daily = d.get("usageData", {}).get("daily", {})
+        daily = (d.get("usageData") or {}).get("daily") or {}
         # Performance optimization: List comprehension with locally cached
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _lp_from_dict = LevelPayDailyValue._from_dict
         return cls(
-            labels=daily.get("labels", []),
-            flags=daily.get("flags", []),
-            values=[_lp_from_dict(x) for x in daily.get("values", [])],
+            labels=daily.get("labels") or [],
+            flags=daily.get("flags") or [],
+            values=[_lp_from_dict(x) for x in (daily.get("values") or ())],
         )
 
 
@@ -333,8 +337,8 @@ class ActiveTopUpsResponse:
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _st_from_dict = ScheduledTopUp._from_dict
         return cls(
-            scheduled=[_st_from_dict(x) for x in d.get("scheduled", [])],
-            auto_top_ups=d.get("auto_top_ups", []),
+            scheduled=[_st_from_dict(x) for x in (d.get("scheduled") or ())],
+            auto_top_ups=d.get("auto_top_ups") or [],
         )
 
 
