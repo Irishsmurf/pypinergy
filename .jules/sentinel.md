@@ -13,3 +13,8 @@
 **Vulnerability:** The API client permitted the use of insecure `http://` schema for its `base_url`, which would transmit API requests and custom authentication headers in plaintext.
 **Learning:** Security controls like HTTPS must be explicitly enforced in API clients, not just assumed by default. Furthermore, when providing exceptions for local development/testing environments, naive string matching (like checking if the URL starts with "http://localhost") can be bypassed via subdomains (e.g. `http://localhost.example.com`).
 **Prevention:** Always validate the `base_url` scheme and enforce `https://`. When whitelisting local testing environments, use a robust URL parsing library (`urllib.parse.urlparse`) to ensure that only exact hostnames like `localhost` or `127.0.0.1` are permitted.
+
+## 2024-06-10 - [Header Injection via Unsanitized Custom Headers]
+**Vulnerability:** The `check_email` method took a raw user-provided email address and inserted it directly into the `email_address` custom HTTP header in `requests`. If the email string contained `\r` or `\n` characters, it could lead to HTTP header injection. While `requests` catches this with `InvalidHeader`, the application boundary should explicitly sanitize input.
+**Learning:** Application boundaries must sanitize input destined for HTTP headers *before* passing it to underlying networking libraries. Relying on implicit exceptions from libraries like `requests` can lead to unpredictable handling depending on library version or client-side caching.
+**Prevention:** Whenever taking user input and placing it into custom headers, explicitly sanitize to block newline characters (`\r`, `\n`) or restrict allowed characters with a regex and raise a `ValueError` if validation fails.

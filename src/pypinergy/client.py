@@ -174,6 +174,10 @@ class PinergyClient:
         Returns:
             True if the address is registered.
         """
+        # Security: Sanitize user input passed to headers to prevent header injection.
+        if "\r" in email or "\n" in email:
+            raise ValueError("Invalid characters in email address")
+
         try:
             response = self._session.get(
                 self._url("/api/checkemail"),
