@@ -35,6 +35,10 @@ _utc = timezone.utc
 
 def _to_int(val: Any, default: int = 0) -> int:
     """Coerce *val* to ``int``, returning *default* for None / junk input."""
+    # Performance optimization note: checking type(val) is int is faster than
+    # try...except int(val) on the happy path, avoiding exception setup.
+    if type(val) is int:
+        return val
     try:
         return int(val)
     except (TypeError, ValueError):
@@ -43,6 +47,8 @@ def _to_int(val: Any, default: int = 0) -> int:
 
 def _to_float(val: Any, default: float = 0.0) -> float:
     """Coerce *val* to ``float``, returning *default* for None / junk input."""
+    if type(val) is float:
+        return val
     try:
         return float(val)
     except (TypeError, ValueError):
@@ -51,7 +57,7 @@ def _to_float(val: Any, default: float = 0.0) -> float:
 
 def _to_str(val: Any, default: str = "") -> str:
     """Coerce *val* to ``str``, returning *default* for None."""
-    if isinstance(val, str):
+    if type(val) is str:
         return val
     if val is None:
         return default
@@ -73,12 +79,15 @@ def _parse_ts_pair(ts: Any) -> Tuple[Optional[int], Optional[datetime]]:
     if ts is None or ts == "":
         return None, None
 
-    # Performance optimization: using try...except int(ts) is faster than
-    # checking isinstance(ts, int) first on the happy path.
-    try:
-        val = int(ts)
-    except (ValueError, TypeError):
-        return None, None
+    # Performance optimization note: checking type(ts) is int is faster than
+    # try...except int(ts) on the happy path, avoiding exception setup.
+    if type(ts) is int:
+        val = ts
+    else:
+        try:
+            val = int(ts)
+        except (ValueError, TypeError):
+            return None, None
 
     try:
         # Avoid repeated global/attribute lookups by using cached references

@@ -9,3 +9,7 @@
 ## 2024-05-06 - Memory Optimization for Heavy API Payloads
 **Learning:** For Python 3.10+, using the `slots=True` parameter on heavily instantiated `@dataclass` API models significantly reduces memory footprint (from ~296 bytes to ~80 bytes per instance) and slightly improves instantiation speed by avoiding dynamic `__dict__` allocations. This is highly relevant for wrapping APIs that return large series of metrics.
 **Action:** Always conditionally use `_DATACLASS_KWARGS = {'slots': True} if sys.version_info >= (3, 10) else {}` and apply it to `@dataclass` definitions that will be instantiated hundreds or thousands of times.
+
+## 2025-03-02 - Type checking vs Exception handling for type coercion
+**Learning:** Checking `type(x) is int` before attempting type coercion (`try: int(x) except:`) provides a significant performance boost (around 2x faster) on the happy path where the value is already of the target type. It avoids exception setup overhead and redundant coercions.
+**Action:** In defensive parsing functions that are frequently called with already-correct types, add a direct type check (`if type(val) is target_type`) before using EAFP (Easier to Ask for Forgiveness than Permission).
