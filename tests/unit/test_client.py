@@ -445,6 +445,23 @@ def test_401_raises_auth_error():
         _make_client().get_balance()
 
 
+@rsps_lib.activate
+def test_token_rejection_in_body_raises_auth_error():
+    # The API reports an expired token as HTTP 200 success:false, not 401.
+    _add_login(rsps_lib)
+    rsps_lib.add(
+        rsps_lib.GET,
+        f"{BASE}/api/balance/",
+        json={"success": False, "error_code": 0, "message": "Auth_token is not correct."},
+        status=200,
+    )
+    client = _make_client()
+    with pytest.raises(PinergyAuthError, match="Auth_token is not correct"):
+        client.get_balance()
+    # The stale token is dropped so the next call re-authenticates.
+    assert not client.is_authenticated
+
+
 # ---------------------------------------------------------------------------
 # User-Agent header
 # ---------------------------------------------------------------------------

@@ -152,9 +152,12 @@ class PinergyClient:
         - timeout → :class:`PinergyTimeoutError`
         - HTTP 401 on an authenticated call → :class:`PinergyAuthError`
           (the stale token is also dropped so the next call re-authenticates)
+        - token rejection reported as HTTP 200 ``success: false`` on an
+          authenticated call → :class:`PinergyAuthError` (stale token dropped
+          likewise)
         - other HTTP / network errors → :class:`PinergyHTTPError`
         - unparseable or non-object JSON body → :class:`PinergyResponseError`
-        - application-level ``success: false`` → :class:`PinergyAPIError`
+        - other application-level ``success: false`` → :class:`PinergyAPIError`
           (unless *check_api_error* is False)
         """
         if authenticated:
@@ -185,10 +188,13 @@ class PinergyClient:
         except ValueError as exc:
             raise PinergyResponseError(f"API returned malformed JSON: {exc}") from exc
         if not isinstance(data, dict):
-            raise PinergyResponseError(
-                f"API returned non-object JSON ({type(data).__name__})"
-            )
+            raise PinergyResponseError(f"API returned non-object JSON ({type(data).__name__})")
         if check_api_error:
+            if authenticated and not data.get("success", True):
+                message = str(data.get("message") or "")
+                if _is_token_rejection(message):
+                    self._auth_token = None
+                    raise PinergyAuthError(message or "Auth token rejected")
             _raise_for_api_error(data)
         return data
 
@@ -228,13 +234,9 @@ class PinergyClient:
                 "password": self._password_hash,
                 "device_token": "",
             }
-            data = self._request(
-                "POST", "/api/login/", json=payload, check_api_error=False
-            )
+            data = self._request("POST", "/api/login/", json=payload, check_api_error=False)
             if not data.get("success"):
-                raise PinergyAuthError(
-                    data.get("message", "Login failed") or "Login failed"
-                )
+                raise PinergyAuthError(data.get("message", "Login failed") or "Login failed")
 
             token = data.get("auth_token")
             if not isinstance(token, str) or not token:
@@ -411,9 +413,7 @@ class PinergyClient:
             "device_type": device_type,
             "os_version": os_version,
         }
-        data = self._request(
-            "POST", "/api/updatedevicetoken/", json=payload, authenticated=True
-        )
+        data = self._request("POST", "/api/updatedevicetoken/", json=payload, authenticated=True)
         return bool(data.get("success"))
 
     # ------------------------------------------------------------------
@@ -436,6 +436,16 @@ class PinergyClient:
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
+
+def _is_token_rejection(message: str) -> bool:
+    """Return True if an API error message indicates a rejected auth token.
+
+    The API reports an expired or invalid session token as HTTP 200 with
+    ``success: false`` and a message like "Auth_token is not correct.".
+    """
+    lowered = message.lower()
+    return "auth_token" in lowered or "auth token" in lowered
 
 
 def _raise_for_api_error(data: Dict[str, Any]) -> None:

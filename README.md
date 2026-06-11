@@ -316,9 +316,10 @@ except PinergyResponseError as e:
 | `PinergyTimeoutError` | Request exceeded the configured timeout (subclass of `PinergyHTTPError`) |
 | `PinergyResponseError` | Malformed or structurally invalid response payload (also subclasses `ValueError`) |
 
-If the server rejects the auth token (HTTP 401), the client drops the stale
-token before raising `PinergyAuthError`, so the next call re-authenticates
-automatically.
+If the server rejects the auth token — whether as an HTTP 401 or as an
+HTTP 200 `success: false` body with an auth-token message (e.g.
+"Auth_token is not correct.") — the client drops the stale token before
+raising `PinergyAuthError`, so the next call re-authenticates automatically.
 
 ---
 
