@@ -28,22 +28,25 @@ Requires **Python 3.9+** and [`requests`](https://requests.readthedocs.io/).
 ```python
 from pypinergy import PinergyClient
 
-client = PinergyClient("you@example.com", "your-password")
+with PinergyClient("you@example.com", "your-password") as client:
+    # Check your current balance
+    balance = client.get_balance()
+    print(f"Balance: €{balance.credit_balance:.2f}")
+    print(f"Estimated days remaining: {balance.top_up_in_days}")
 
-# Check your current balance
-balance = client.get_balance()
-print(f"Balance: €{balance.credit_balance:.2f}")
-print(f"Estimated days remaining: {balance.top_up_in_days}")
-
-# Today's usage
-usage = client.get_usage()
-today = usage.day[0]
-print(f"{today.date:%Y-%m-%d}  {today.kwh:.2f} kWh  €{today.amount:.2f}")
+    # Today's usage
+    usage = client.get_usage()
+    today = usage.day[0]
+    print(f"{today.date:%Y-%m-%d}  {today.kwh:.2f} kWh  €{today.amount:.2f}")
 ```
 
 Authentication is **lazy** — the client logs in automatically on the first API
-call. You can also call `.login()` explicitly if you want the `LoginResponse`
-data (account details, credit cards, etc.).
+call (thread-safe: concurrent first calls perform a single login). You can also
+call `.login()` explicitly if you want the `LoginResponse` data (account
+details, credit cards, etc.).
+
+The context manager releases the pooled HTTP connection on exit. A plain
+`client = PinergyClient(...)` works too — call `client.close()` when done.
 
 ---
 
@@ -87,6 +90,10 @@ client.logout()
 print(client.is_authenticated)  # False
 ```
 
+Logout discards the stored credentials: any further API call raises
+`PinergyAuthError` immediately (no automatic re-login). Create a new
+`PinergyClient` to authenticate again.
+
 ---
 
 ## Usage Data
@@ -118,6 +125,7 @@ Each `UsageEntry` has:
 | `kwh` | `float` | Energy consumed in kilowatt-hours |
 | `co2` | `float` | CO₂ in kg (0.0 for renewable supply) |
 | `date` | `datetime` | UTC datetime for the start of the period |
+| `date_dt` | `datetime` | Alias for `date` (`*_dt` naming convention) |
 | `date_ts` | `int` | Raw Unix timestamp |
 
 ### Level Pay customers
@@ -157,8 +165,10 @@ print(f"Power off?          {bal.power_off}")
 | `pending_top_up_by` | `str` | Who initiated the pending top-up |
 | `last_top_up_amount` | `float` | Amount of last top-up (€) |
 | `last_top_up_time` | `datetime \| None` | UTC datetime of last top-up |
+| `last_top_up_dt` | `datetime \| None` | Alias for `last_top_up_time` |
 | `last_top_up_ts` | `int \| None` | Raw Unix timestamp of last top-up |
 | `last_reading` | `datetime \| None` | UTC datetime of last meter reading |
+| `last_reading_dt` | `datetime \| None` | Alias for `last_reading` |
 | `last_reading_ts` | `int \| None` | Raw Unix timestamp of last reading |
 | `credit_low` | `bool` | Balance below configured threshold |
 | `emergency_credit` | `bool` | On emergency credit |
@@ -270,7 +280,13 @@ print(version_info)
 
 ```python
 from pypinergy import PinergyClient
-from pypinergy.exceptions import PinergyAuthError, PinergyAPIError, PinergyHTTPError
+from pypinergy.exceptions import (
+    PinergyAPIError,
+    PinergyAuthError,
+    PinergyHTTPError,
+    PinergyResponseError,
+    PinergyTimeoutError,
+)
 
 client = PinergyClient("you@example.com", "wrong-password")
 
@@ -283,22 +299,34 @@ try:
     balance = client.get_balance()
 except PinergyAPIError as e:
     print(f"API error {e.error_code}: {e.message}")
+except PinergyTimeoutError as e:
+    print(f"Request timed out: {e}")
 except PinergyHTTPError as e:
     print(f"Network error: {e}")
+except PinergyResponseError as e:
+    print(f"Unexpected response payload: {e}")
 ```
 
 | Exception | When raised |
 |---|---|
 | `PinergyError` | Base class for all library errors |
-| `PinergyAuthError` | Invalid credentials or expired session |
+| `PinergyAuthError` | Invalid credentials, expired/rejected token, or use after `logout()` |
 | `PinergyAPIError` | API returned `success: false` (has `.error_code` and `.message`) |
-| `PinergyHTTPError` | Network-level failure (timeout, 5xx, DNS, etc.) |
+| `PinergyHTTPError` | Network-level failure (5xx, DNS, connection errors, etc.) |
+| `PinergyTimeoutError` | Request exceeded the configured timeout (subclass of `PinergyHTTPError`) |
+| `PinergyResponseError` | Malformed or structurally invalid response payload (also subclasses `ValueError`) |
+
+If the server rejects the auth token (HTTP 401), the client drops the stale
+token before raising `PinergyAuthError`, so the next call re-authenticates
+automatically.
 
 ---
 
 ## Advanced Usage
 
 ### Custom timeout
+
+Applied to every network call; accepts a float for sub-second precision.
 
 ```python
 client = PinergyClient("you@example.com", "password", timeout=10)
@@ -350,22 +378,18 @@ pytest --cov=pypinergy --cov-report=html
 
 ## Publishing to PyPI
 
+Releases are automated via [Trusted Publishing](https://docs.pypi.org/trusted-publishers/):
+bump `version` in `pyproject.toml` **and** `__version__` in
+`src/pypinergy/__init__.py` (they must match), then push a matching tag:
+
 ```bash
-pip install build twine
-
-# Build distribution
-python -m build
-
-# Upload to TestPyPI first
-twine upload --repository testpypi dist/*
-
-# Upload to PyPI
-twine upload dist/*
+git tag v0.1.6
+git push origin v0.1.6
 ```
 
-Or use [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) via
-GitHub Actions — add a `.github/workflows/publish.yml` that triggers on a
-version tag.
+The [`publish.yml`](.github/workflows/publish.yml) workflow verifies the tag
+against the package version, builds the wheel and sdist, uploads to PyPI, and
+creates a GitHub release.
 
 ---
 
