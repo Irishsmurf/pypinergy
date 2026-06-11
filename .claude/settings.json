@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh run:*)",
+      "Bash(gh secret:*)",
+      "Bash(gh api:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(e[''''name'''']\\) for e in d.get\\(''''environments'''',[]\\)]\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''protection_rules:'''', d.get\\(''''protection_rules'''',[]\\)\\)\")",
+      "Bash(python -m pip install build -q)",
+      "Bash(python -m build)",
+      "Bash(git tag:*)",
+      "Bash(gh workflow:*)",
+      "Bash(xargs ls:*)",
+      "Bash(wc -l /home/paddez/dev/pypinergy/src/pypinergy/*.py)",
+      "Bash(wc -l /home/paddez/dev/pypinergy/tests/unit/*.py /home/paddez/dev/pypinergy/tests/integration/*.py)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); case \"$f\" in *.py) ruff check \"$f\" >&2 || exit 2;; esac",
+            "timeout": 30,
+            "statusMessage": "ruff check"
+          }
+        ]
+      }
+    ]
+  }
+}
