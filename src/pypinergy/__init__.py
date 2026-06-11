@@ -6,6 +6,8 @@ from .exceptions import (
     PinergyAuthError,
     PinergyError,
     PinergyHTTPError,
+    PinergyResponseError,
+    PinergyTimeoutError,
 )
 from .models import (
     ActiveTopUpsResponse,
@@ -37,6 +39,8 @@ __all__ = [
     "PinergyAPIError",
     "PinergyAuthError",
     "PinergyHTTPError",
+    "PinergyResponseError",
+    "PinergyTimeoutError",
     # Models
     "LoginResponse",
     "User",
@@ -59,4 +63,4 @@ __all__ = [
     "NotificationPreferences",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.1.6"

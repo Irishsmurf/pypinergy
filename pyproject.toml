@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pypinergy"
-version = "0.1.5"
+version = "0.1.6"
 description = "Python client library for the Pinergy smart meter API"
 readme = "README.md"
 license = { text = "MIT" }
@@ -34,6 +34,9 @@ dev = [
     "pytest>=7.4",
     "pytest-cov>=4.1",
     "responses>=0.24",
+    "ruff>=0.8",
+    "mypy>=1.8",
+    "types-requests",
 ]
 
 [project.urls]
@@ -44,6 +47,16 @@ Changelog = "https://github.com/irishsmurf/pypinergy/releases"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pypinergy"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.mypy]
+# Oldest version mypy can still model; the package itself supports 3.9 at runtime.
+python_version = "3.10"
+strict = true
+files = ["src/pypinergy"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

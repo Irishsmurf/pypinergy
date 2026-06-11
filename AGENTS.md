@@ -81,6 +81,8 @@ pytest --cov=pypinergy --cov-report=html
   - `PinergyAuthError` — session / auth failures
   - `PinergyAPIError` — API returned an application-level error (includes `.error_code`)
   - `PinergyHTTPError` — network-level failure
+  - `PinergyTimeoutError` — request timeout (subclass of `PinergyHTTPError`)
+  - `PinergyResponseError` — malformed / structurally invalid response payload (also subclasses `ValueError`)
 - The `_auth.py` module is private (prefixed `_`). Don't call it outside `client.py`.
 - The mobile app's `User-Agent` header (`okhttp/5.1.0`) must be preserved — the API rejects other agents.
 
@@ -101,7 +103,7 @@ pytest --cov=pypinergy --cov-report=html
 
 ### Bumping the version
 
-Update `version` in [pyproject.toml](pyproject.toml) only. The publish workflow reads from there; `__init__.py` does not need a separate version string.
+Update `version` in [pyproject.toml](pyproject.toml) **and** `__version__` in [src/pypinergy/__init__.py](src/pypinergy/__init__.py) — they must match. The publish workflow verifies the tag against pyproject.toml.
 
 ### Publishing a release
 

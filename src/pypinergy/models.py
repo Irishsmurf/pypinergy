@@ -2,16 +2,24 @@
 
 All Unix-timestamp fields are exposed both as the raw integer (``*_ts``) and as
 a :class:`datetime.datetime` (UTC, ``*_dt``).
+
+Parsing is defensive: ``_from_dict`` constructors tolerate missing keys, ``null``
+values, and wrong-typed scalars without raising ``KeyError`` / ``TypeError`` /
+``AttributeError`` — fields fall back to neutral defaults instead, so a small
+upstream schema drift degrades a field rather than breaking the whole call.
 """
 
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-import sys
-from typing import List, Optional
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
-_DATACLASS_KWARGS = {'slots': True} if sys.version_info >= (3, 10) else {}
+if sys.version_info >= (3, 10):
+    _DATACLASS_KWARGS: Dict[str, bool] = {"slots": True}
+else:
+    _DATACLASS_KWARGS = {}
 
 _EPOCH_UTC = datetime.fromtimestamp(0, tz=timezone.utc)
 
@@ -20,7 +28,47 @@ _fromtimestamp = datetime.fromtimestamp
 _utc = timezone.utc
 
 
-def _parse_ts_pair(ts: Optional[str | int]) -> tuple[Optional[int], Optional[datetime]]:
+# ---------------------------------------------------------------------------
+# Defensive coercion helpers
+# ---------------------------------------------------------------------------
+
+
+def _to_int(val: Any, default: int = 0) -> int:
+    """Coerce *val* to ``int``, returning *default* for None / junk input."""
+    try:
+        return int(val)
+    except (TypeError, ValueError):
+        return default
+
+
+def _to_float(val: Any, default: float = 0.0) -> float:
+    """Coerce *val* to ``float``, returning *default* for None / junk input."""
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return default
+
+
+def _to_str(val: Any, default: str = "") -> str:
+    """Coerce *val* to ``str``, returning *default* for None."""
+    if isinstance(val, str):
+        return val
+    if val is None:
+        return default
+    return str(val)
+
+
+def _as_dict(val: Any) -> Dict[str, Any]:
+    """Return *val* if it is a dict, else ``{}`` (defends against ``null`` nested objects)."""
+    return val if isinstance(val, dict) else {}
+
+
+def _as_list(val: Any) -> List[Any]:
+    """Return *val* if it is a list, else ``[]`` (defends against ``null`` arrays)."""
+    return val if isinstance(val, list) else []
+
+
+def _parse_ts_pair(ts: Any) -> Tuple[Optional[int], Optional[datetime]]:
     """Parse a timestamp into both its integer and datetime representations."""
     if ts is None or ts == "":
         return None, None
@@ -39,7 +87,7 @@ def _parse_ts_pair(ts: Optional[str | int]) -> tuple[Optional[int], Optional[dat
         return val, None
 
 
-def _ts_to_dt(ts: Optional[str | int]) -> Optional[datetime]:
+def _ts_to_dt(ts: Any) -> Optional[datetime]:
     """Convert a Unix timestamp (string or int) to an aware UTC datetime."""
     _, dt = _parse_ts_pair(ts)
     return dt
@@ -64,16 +112,17 @@ class User:
     last_name: str
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "User":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "User":
+        d = _as_dict(d)
         return cls(
-            title=d.get("title", ""),
-            name=d.get("name", ""),
-            pinergy_id=d.get("pinergy_id", ""),
-            mobile_number=d.get("mobile_number", ""),
+            title=_to_str(d.get("title")),
+            name=_to_str(d.get("name")),
+            pinergy_id=_to_str(d.get("pinergy_id")),
+            mobile_number=_to_str(d.get("mobile_number")),
             sms_notifications=bool(d.get("sms_notifications", False)),
             email_notifications=bool(d.get("email_notifications", False)),
-            first_name=d.get("firstName", ""),
-            last_name=d.get("lastName", ""),
+            first_name=_to_str(d.get("firstName")),
+            last_name=_to_str(d.get("lastName")),
         )
 
 
@@ -88,13 +137,14 @@ class House:
     children_count: int
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "House":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "House":
+        d = _as_dict(d)
         return cls(
-            type=int(d.get("type", 0)),
-            heating_type=int(d.get("heating_type", 0)),
-            bedroom_count=int(d.get("bedroom_count", 0)),
-            adult_count=int(d.get("adult_count", 0)),
-            children_count=int(d.get("children_count", 0)),
+            type=_to_int(d.get("type")),
+            heating_type=_to_int(d.get("heating_type")),
+            bedroom_count=_to_int(d.get("bedroom_count")),
+            adult_count=_to_int(d.get("adult_count")),
+            children_count=_to_int(d.get("children_count")),
         )
 
 
@@ -107,11 +157,12 @@ class CreditCard:
     last_4_digits: str
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "CreditCard":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "CreditCard":
+        d = _as_dict(d)
         return cls(
-            cc_token=d.get("cc_token", ""),
-            name=d.get("name", ""),
-            last_4_digits=d.get("last_4_digits", ""),
+            cc_token=_to_str(d.get("cc_token")),
+            name=_to_str(d.get("name")),
+            last_4_digits=_to_str(d.get("last_4_digits")),
         )
 
 
@@ -132,22 +183,23 @@ class LoginResponse:
     credit_cards: List[CreditCard]
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "LoginResponse":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "LoginResponse":
+        d = _as_dict(d)
         # Performance optimization: List comprehension with locally cached
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _cc_from_dict = CreditCard._from_dict
         return cls(
-            auth_token=d["auth_token"],
+            auth_token=_to_str(d.get("auth_token")),
             is_legacy_meter=bool(d.get("is_legacy_meter", False)),
             is_no_wan_meter=bool(d.get("is_no_wan_meter", False)),
             is_level_pay=bool(d.get("is_level_pay", False)),
             is_child=bool(d.get("is_child", False)),
             is_business_connect=bool(d.get("is_business_connect", False)),
-            premises_number=d.get("premises_number", ""),
-            account_type=d.get("account_type", ""),
-            user=User._from_dict(d.get("user", {})),
-            house=House._from_dict(d.get("house", {})),
-            credit_cards=[_cc_from_dict(x) for x in d.get("credit_cards", [])],
+            premises_number=_to_str(d.get("premises_number")),
+            account_type=_to_str(d.get("account_type")),
+            user=User._from_dict(_as_dict(d.get("user"))),
+            house=House._from_dict(_as_dict(d.get("house"))),
+            credit_cards=[_cc_from_dict(x) for x in _as_list(d.get("credit_cards"))],
         )
 
 
@@ -172,14 +224,23 @@ class UsageEntry:
     date: datetime
     """UTC datetime for the start of the period."""
 
+    @property
+    def date_dt(self) -> datetime:
+        """Alias for :attr:`date`, following the ``*_dt`` naming convention.
+
+        :attr:`date` remains fully supported; both names refer to the same value.
+        """
+        return self.date
+
     @classmethod
-    def _from_dict(cls, d: dict) -> "UsageEntry":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "UsageEntry":
+        d = _as_dict(d)
         ts_int, dt = _parse_ts_pair(d.get("date", 0))
         return cls(
             available=bool(d.get("available", False)),
-            amount=float(d.get("amount", 0.0)),
-            kwh=float(d.get("kwh", 0.0)),
-            co2=float(d.get("co2", 0.0)),
+            amount=_to_float(d.get("amount")),
+            kwh=_to_float(d.get("kwh")),
+            co2=_to_float(d.get("co2")),
             date_ts=ts_int or 0,
             # Re-use the constant instead of instantiating a new aware datetime per fallback
             date=dt or _EPOCH_UTC,
@@ -198,14 +259,15 @@ class UsageResponse:
     """Last 11 months — one entry per month."""
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "UsageResponse":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "UsageResponse":
+        d = _as_dict(d)
         # Performance optimization: List comprehension with locally cached
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _ue_from_dict = UsageEntry._from_dict
         return cls(
-            day=[_ue_from_dict(x) for x in d.get("day", [])],
-            week=[_ue_from_dict(x) for x in d.get("week", [])],
-            month=[_ue_from_dict(x) for x in d.get("month", [])],
+            day=[_ue_from_dict(x) for x in _as_list(d.get("day"))],
+            week=[_ue_from_dict(x) for x in _as_list(d.get("week"))],
+            month=[_ue_from_dict(x) for x in _as_list(d.get("month"))],
         )
 
 
@@ -219,11 +281,12 @@ class LevelPayDailyValue:
     """Half-hourly label and kWh per tariff band."""
 
     label: str
-    day_kwh: dict
+    day_kwh: Dict[str, Any]
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "LevelPayDailyValue":
-        return cls(label=d.get("label", ""), day_kwh=d.get("daykWh", {}))
+    def _from_dict(cls, d: Mapping[str, Any]) -> "LevelPayDailyValue":
+        d = _as_dict(d)
+        return cls(label=_to_str(d.get("label")), day_kwh=_as_dict(d.get("daykWh")))
 
 
 @dataclass(**_DATACLASS_KWARGS)
@@ -235,15 +298,15 @@ class LevelPayUsageResponse:
     values: List[LevelPayDailyValue]
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "LevelPayUsageResponse":
-        daily = d.get("usageData", {}).get("daily", {})
+    def _from_dict(cls, d: Mapping[str, Any]) -> "LevelPayUsageResponse":
+        daily = _as_dict(_as_dict(_as_dict(d).get("usageData")).get("daily"))
         # Performance optimization: List comprehension with locally cached
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _lp_from_dict = LevelPayDailyValue._from_dict
         return cls(
-            labels=daily.get("labels", []),
-            flags=daily.get("flags", []),
-            values=[_lp_from_dict(x) for x in daily.get("values", [])],
+            labels=_as_list(daily.get("labels")),
+            flags=_as_list(daily.get("flags")),
+            values=[_lp_from_dict(x) for x in _as_list(daily.get("values"))],
         )
 
 
@@ -274,17 +337,34 @@ class BalanceResponse:
     last_reading_ts: Optional[int]
     last_reading: Optional[datetime]
 
+    @property
+    def last_top_up_dt(self) -> Optional[datetime]:
+        """Alias for :attr:`last_top_up_time`, following the ``*_dt`` naming convention.
+
+        :attr:`last_top_up_time` remains fully supported; both names refer to the same value.
+        """
+        return self.last_top_up_time
+
+    @property
+    def last_reading_dt(self) -> Optional[datetime]:
+        """Alias for :attr:`last_reading`, following the ``*_dt`` naming convention.
+
+        :attr:`last_reading` remains fully supported; both names refer to the same value.
+        """
+        return self.last_reading
+
     @classmethod
-    def _from_dict(cls, d: dict) -> "BalanceResponse":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "BalanceResponse":
+        d = _as_dict(d)
         ltu_ts, ltu_dt = _parse_ts_pair(d.get("last_top_up_time"))
         lr_ts, lr_dt = _parse_ts_pair(d.get("last_reading"))
 
         return cls(
-            credit_balance=float(d.get("balance", 0.0)),
-            top_up_in_days=int(d.get("top_up_in_days", 0)),
+            credit_balance=_to_float(d.get("balance")),
+            top_up_in_days=_to_int(d.get("top_up_in_days")),
             pending_top_up=bool(d.get("pending_top_up", False)),
-            pending_top_up_by=d.get("pending_top_up_by", ""),
-            last_top_up_amount=float(d.get("last_top_up_amount", 0.0)),
+            pending_top_up_by=_to_str(d.get("pending_top_up_by")),
+            last_top_up_amount=_to_float(d.get("last_top_up_amount")),
             credit_low=bool(d.get("credit_low", False)),
             emergency_credit=bool(d.get("emergency_credit", False)),
             power_off=bool(d.get("power_off", False)),
@@ -311,12 +391,13 @@ class ScheduledTopUp:
     customer: str
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "ScheduledTopUp":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "ScheduledTopUp":
+        d = _as_dict(d)
         return cls(
             current_user=bool(d.get("current_user", True)),
-            top_up_amount=float(d.get("top_up_amount", 0.0)),
-            top_up_day=int(d.get("top_up_day", 0)),
-            customer=d.get("customer", ""),
+            top_up_amount=_to_float(d.get("top_up_amount")),
+            top_up_day=_to_int(d.get("top_up_day")),
+            customer=_to_str(d.get("customer")),
         )
 
 
@@ -325,16 +406,17 @@ class ActiveTopUpsResponse:
     """Scheduled and automatic top-up configurations."""
 
     scheduled: List[ScheduledTopUp]
-    auto_top_ups: List[dict]
+    auto_top_ups: List[Dict[str, Any]]
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "ActiveTopUpsResponse":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "ActiveTopUpsResponse":
+        d = _as_dict(d)
         # Performance optimization: List comprehension with locally cached
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _st_from_dict = ScheduledTopUp._from_dict
         return cls(
-            scheduled=[_st_from_dict(x) for x in d.get("scheduled", [])],
-            auto_top_ups=d.get("auto_top_ups", []),
+            scheduled=[_st_from_dict(x) for x in _as_list(d.get("scheduled"))],
+            auto_top_ups=_as_list(d.get("auto_top_ups")),
         )
 
 
@@ -351,10 +433,11 @@ class CompareValues:
     average_home: float
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "CompareValues":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "CompareValues":
+        d = _as_dict(d)
         return cls(
-            users_home=float(d.get("users_home", 0.0)),
-            average_home=float(d.get("average_home", 0.0)),
+            users_home=_to_float(d.get("users_home")),
+            average_home=_to_float(d.get("average_home")),
         )
 
 
@@ -368,12 +451,13 @@ class ComparePeriod:
     co2: CompareValues
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "ComparePeriod":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "ComparePeriod":
+        d = _as_dict(d)
         return cls(
             available=bool(d.get("available", False)),
-            euro=CompareValues._from_dict(d.get("euro", {})),
-            kwh=CompareValues._from_dict(d.get("kwh", {})),
-            co2=CompareValues._from_dict(d.get("co2", {})),
+            euro=CompareValues._from_dict(_as_dict(d.get("euro"))),
+            kwh=CompareValues._from_dict(_as_dict(d.get("kwh"))),
+            co2=CompareValues._from_dict(_as_dict(d.get("co2"))),
         )
 
 
@@ -386,11 +470,12 @@ class CompareResponse:
     month: ComparePeriod
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "CompareResponse":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "CompareResponse":
+        d = _as_dict(d)
         return cls(
-            day=ComparePeriod._from_dict(d.get("day", {})),
-            week=ComparePeriod._from_dict(d.get("week", {})),
-            month=ComparePeriod._from_dict(d.get("month", {})),
+            day=ComparePeriod._from_dict(_as_dict(d.get("day"))),
+            week=ComparePeriod._from_dict(_as_dict(d.get("week"))),
+            month=ComparePeriod._from_dict(_as_dict(d.get("month"))),
         )
 
 
@@ -409,12 +494,13 @@ class ConfigInfoResponse:
     scheduled_top_up_amounts: List[int]
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "ConfigInfoResponse":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "ConfigInfoResponse":
+        d = _as_dict(d)
         return cls(
-            thresholds=d.get("thresholds", []),
-            top_up_amounts=d.get("top_up_amounts", []),
-            auto_up_amounts=d.get("auto_up_amounts", []),
-            scheduled_top_up_amounts=d.get("scheduled_top_up_amounts", []),
+            thresholds=_as_list(d.get("thresholds")),
+            top_up_amounts=_as_list(d.get("top_up_amounts")),
+            auto_up_amounts=_as_list(d.get("auto_up_amounts")),
+            scheduled_top_up_amounts=_as_list(d.get("scheduled_top_up_amounts")),
         )
 
 
@@ -424,8 +510,9 @@ class HouseType:
     name: str
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "HouseType":
-        return cls(id=int(d["id"]), name=d["name"])
+    def _from_dict(cls, d: Mapping[str, Any]) -> "HouseType":
+        d = _as_dict(d)
+        return cls(id=_to_int(d.get("id")), name=_to_str(d.get("name")))
 
 
 @dataclass(**_DATACLASS_KWARGS)
@@ -434,8 +521,9 @@ class HeatingType:
     name: str
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "HeatingType":
-        return cls(id=int(d["id"]), name=d["name"])
+    def _from_dict(cls, d: Mapping[str, Any]) -> "HeatingType":
+        d = _as_dict(d)
+        return cls(id=_to_int(d.get("id")), name=_to_str(d.get("name")))
 
 
 @dataclass(**_DATACLASS_KWARGS)
@@ -452,20 +540,21 @@ class DefaultsInfoResponse:
     default_children: int
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "DefaultsInfoResponse":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "DefaultsInfoResponse":
+        d = _as_dict(d)
         # Performance optimization: List comprehension with locally cached
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _ht_from_dict = HouseType._from_dict
         _heat_from_dict = HeatingType._from_dict
         return cls(
-            house_types=[_ht_from_dict(x) for x in d.get("house_types", [])],
-            heating_types=[_heat_from_dict(x) for x in d.get("heating_types", [])],
-            max_bedrooms=int(d.get("max_bedrooms", 0)),
-            default_bedrooms=int(d.get("default_bedrooms", 0)),
-            max_adults=int(d.get("max_adults", 0)),
-            default_adults=int(d.get("default_adults", 0)),
-            max_children=int(d.get("max_children", 0)),
-            default_children=int(d.get("default_children", 0)),
+            house_types=[_ht_from_dict(x) for x in _as_list(d.get("house_types"))],
+            heating_types=[_heat_from_dict(x) for x in _as_list(d.get("heating_types"))],
+            max_bedrooms=_to_int(d.get("max_bedrooms")),
+            default_bedrooms=_to_int(d.get("default_bedrooms")),
+            max_adults=_to_int(d.get("max_adults")),
+            default_adults=_to_int(d.get("default_adults")),
+            max_children=_to_int(d.get("max_children")),
+            default_children=_to_int(d.get("default_children")),
         )
 
 
@@ -485,11 +574,12 @@ class NotificationPreferences:
     should_show_message: str
 
     @classmethod
-    def _from_dict(cls, d: dict) -> "NotificationPreferences":
+    def _from_dict(cls, d: Mapping[str, Any]) -> "NotificationPreferences":
+        d = _as_dict(d)
         return cls(
             sms=bool(d.get("sms", False)),
             email=bool(d.get("email", False)),
             phone=bool(d.get("phone", False)),
-            should_show=int(d.get("should_show", 0)),
-            should_show_message=d.get("should_show_message", ""),
+            should_show=_to_int(d.get("should_show")),
+            should_show_message=_to_str(d.get("should_show_message")),
         )

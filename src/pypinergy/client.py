@@ -2,13 +2,21 @@
 
 from __future__ import annotations
 
+import threading
 import urllib.parse
-from typing import Optional
+from types import TracebackType
+from typing import Any, Dict, Optional, Type
 
 import requests
 
 from ._auth import hash_password
-from .exceptions import PinergyAPIError, PinergyAuthError, PinergyHTTPError
+from .exceptions import (
+    PinergyAPIError,
+    PinergyAuthError,
+    PinergyHTTPError,
+    PinergyResponseError,
+    PinergyTimeoutError,
+)
 from .models import (
     ActiveTopUpsResponse,
     BalanceResponse,
@@ -28,7 +36,9 @@ _USER_AGENT = "okhttp/5.1.0"
 class _NoRedirectSession(requests.Session):
     """A requests Session that disables redirects by default to prevent header leakage."""
 
-    def request(self, method, url, *args, **kwargs):
+    def request(  # type: ignore[override]
+        self, method: str, url: str, *args: Any, **kwargs: Any
+    ) -> requests.Response:
         kwargs.setdefault("allow_redirects", False)
         return super().request(method, url, *args, **kwargs)
 
@@ -38,21 +48,24 @@ class PinergyClient:
 
     Authentication is performed lazily — the first call to any API method that
     requires a token will trigger :meth:`login` automatically if no token has
-    been set yet.
+    been set yet. Lazy login is thread-safe: concurrent first calls perform a
+    single login. If the server rejects a token (HTTP 401), the stale token is
+    dropped so the next call re-authenticates transparently.
+
+    The client owns a pooled :class:`requests.Session` (keep-alive connection
+    reuse). Use it as a context manager, or call :meth:`close` when done, to
+    release the pool deterministically::
+
+        with PinergyClient("user@example.com", "my-password") as client:
+            balance = client.get_balance()
+            print(f"Balance: €{balance.credit_balance:.2f}")
 
     Args:
         email: Registered Pinergy account email address.
         password: Plaintext account password (hashed internally before sending).
         base_url: Override the API base URL (useful for testing).
-        timeout: Default request timeout in seconds.
-
-    Example::
-
-        from pypinergy import PinergyClient
-
-        client = PinergyClient("user@example.com", "my-password")
-        balance = client.get_balance()
-        print(f"Balance: €{balance.credit_balance:.2f}")
+        timeout: Default request timeout in seconds, applied to every network
+            call. Accepts a float for sub-second precision.
     """
 
     def __init__(
@@ -60,10 +73,10 @@ class PinergyClient:
         email: str,
         password: str,
         base_url: str = _BASE_URL,
-        timeout: int = 30,
+        timeout: float = 30.0,
     ) -> None:
         self._email = email
-        self._password_hash = hash_password(password)
+        self._password_hash: Optional[str] = hash_password(password)
         self._base_url = base_url.rstrip("/")
 
         parsed = urllib.parse.urlparse(self._base_url)
@@ -75,8 +88,33 @@ class PinergyClient:
 
         self._timeout = timeout
         self._auth_token: Optional[str] = None
+        # Reentrant: _ensure_auth() holds it while calling login(), which takes it again.
+        self._auth_lock = threading.RLock()
         self._session = _NoRedirectSession()
         self._session.headers.update({"User-Agent": _USER_AGENT})
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    def close(self) -> None:
+        """Release the underlying HTTP connection pool.
+
+        Idempotent — safe to call more than once. The client must not be used
+        for further API calls after closing.
+        """
+        self._session.close()
+
+    def __enter__(self) -> "PinergyClient":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc: Optional[BaseException],
+        tb: Optional[TracebackType],
+    ) -> None:
+        self.close()
 
     # ------------------------------------------------------------------
     # Session helpers
@@ -88,33 +126,75 @@ class PinergyClient:
         return self._auth_token is not None
 
     def _ensure_auth(self) -> None:
-        """Login if no token is present yet."""
-        if not self.is_authenticated:
-            self.login()
+        """Login if no token is present yet (thread-safe, double-checked)."""
+        if self._auth_token is None:
+            with self._auth_lock:
+                if self._auth_token is None:
+                    self.login()
 
     def _url(self, path: str) -> str:
         return f"{self._base_url}/{path.lstrip('/')}"
 
-    def _get(self, path: str) -> dict:
-        """Perform an authenticated GET and return the parsed JSON body."""
-        self._ensure_auth()
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        json: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+        authenticated: bool = False,
+        check_api_error: bool = True,
+    ) -> Dict[str, Any]:
+        """Perform an HTTP request and return the parsed JSON body.
+
+        Every transport failure is mapped onto the ``PinergyError`` hierarchy:
+
+        - timeout → :class:`PinergyTimeoutError`
+        - HTTP 401 on an authenticated call → :class:`PinergyAuthError`
+          (the stale token is also dropped so the next call re-authenticates)
+        - other HTTP / network errors → :class:`PinergyHTTPError`
+        - unparseable or non-object JSON body → :class:`PinergyResponseError`
+        - application-level ``success: false`` → :class:`PinergyAPIError`
+          (unless *check_api_error* is False)
+        """
+        if authenticated:
+            self._ensure_auth()
+            headers = dict(headers) if headers else {}
+            headers["auth_token"] = self._auth_token or ""
         try:
-            response = self._session.get(
+            response = self._session.request(
+                method,
                 self._url(path),
-                headers={"auth_token": self._auth_token},
+                json=json,
+                headers=headers,
                 timeout=self._timeout,
             )
             response.raise_for_status()
+        except requests.exceptions.Timeout as exc:
+            raise PinergyTimeoutError(str(exc)) from exc
         except requests.exceptions.HTTPError as exc:
-            if exc.response is not None and exc.response.status_code == 401:
+            if authenticated and exc.response is not None and exc.response.status_code == 401:
+                self._auth_token = None
                 raise PinergyAuthError("Auth token rejected (401)") from exc
             raise PinergyHTTPError(str(exc)) from exc
         except requests.exceptions.RequestException as exc:
             raise PinergyHTTPError(str(exc)) from exc
 
-        data = response.json()
-        _raise_for_api_error(data)
+        try:
+            data = response.json()
+        except ValueError as exc:
+            raise PinergyResponseError(f"API returned malformed JSON: {exc}") from exc
+        if not isinstance(data, dict):
+            raise PinergyResponseError(
+                f"API returned non-object JSON ({type(data).__name__})"
+            )
+        if check_api_error:
+            _raise_for_api_error(data)
         return data
+
+    def _get(self, path: str) -> Dict[str, Any]:
+        """Perform an authenticated GET and return the parsed JSON body."""
+        return self._request("GET", path, authenticated=True)
 
     # ------------------------------------------------------------------
     # Authentication
@@ -123,45 +203,57 @@ class PinergyClient:
     def login(self) -> LoginResponse:
         """Authenticate with the Pinergy API and store the session token.
 
+        Thread-safe — concurrent callers serialize on an internal lock.
+
         Raises:
-            PinergyAuthError: If credentials are invalid.
+            PinergyAuthError: If credentials are invalid, or this client was
+                explicitly logged out (credentials are discarded on
+                :meth:`logout`; create a new client to re-authenticate).
+            PinergyTimeoutError: If the request times out.
             PinergyHTTPError: On network-level errors.
+            PinergyResponseError: If the response body is malformed or is
+                missing the ``auth_token``.
 
         Returns:
             :class:`~pypinergy.models.LoginResponse` with full account details.
         """
-        payload = {
-            "email": self._email,
-            "password": self._password_hash,
-            "device_token": "",
-        }
-        try:
-            response = self._session.post(
-                self._url("/api/login/"),
-                json=payload,
-                timeout=self._timeout,
+        with self._auth_lock:
+            if self._password_hash is None:
+                raise PinergyAuthError(
+                    "Client has been logged out — credentials were discarded; "
+                    "create a new PinergyClient to re-authenticate"
+                )
+            payload = {
+                "email": self._email,
+                "password": self._password_hash,
+                "device_token": "",
+            }
+            data = self._request(
+                "POST", "/api/login/", json=payload, check_api_error=False
             )
-            response.raise_for_status()
-        except requests.exceptions.RequestException as exc:
-            raise PinergyHTTPError(str(exc)) from exc
+            if not data.get("success"):
+                raise PinergyAuthError(
+                    data.get("message", "Login failed") or "Login failed"
+                )
 
-        data = response.json()
-        if not data.get("success"):
-            raise PinergyAuthError(
-                data.get("message", "Login failed") or "Login failed"
-            )
-
-        self._auth_token = data["auth_token"]
-        return LoginResponse._from_dict(data)
+            token = data.get("auth_token")
+            if not isinstance(token, str) or not token:
+                raise PinergyResponseError(
+                    "Login succeeded but the response did not include an auth_token"
+                )
+            self._auth_token = token
+            return LoginResponse._from_dict(data)
 
     def logout(self) -> None:
         """Clear the stored auth token, effectively ending the session.
 
         Also clears the cached password hash so automatic re-login does not happen
-        transparently after explicit logout.
+        transparently after explicit logout. Subsequent API calls raise
+        :class:`PinergyAuthError` immediately, without touching the network.
         """
-        self._auth_token = None
-        self._password_hash = None
+        with self._auth_lock:
+            self._auth_token = None
+            self._password_hash = None
 
     def check_email(self, email: str) -> bool:
         """Check whether an email address has a registered Pinergy account.
@@ -174,17 +266,12 @@ class PinergyClient:
         Returns:
             True if the address is registered.
         """
-        try:
-            response = self._session.get(
-                self._url("/api/checkemail"),
-                headers={"email_address": email},
-                timeout=self._timeout,
-            )
-            response.raise_for_status()
-        except requests.exceptions.RequestException as exc:
-            raise PinergyHTTPError(str(exc)) from exc
-
-        data = response.json()
+        data = self._request(
+            "GET",
+            "/api/checkemail",
+            headers={"email_address": email},
+            check_api_error=False,
+        )
         return bool(data.get("success"))
 
     # ------------------------------------------------------------------
@@ -319,46 +406,27 @@ class PinergyClient:
         Returns:
             True on success.
         """
-        self._ensure_auth()
         payload = {
             "device_token": device_token,
             "device_type": device_type,
             "os_version": os_version,
         }
-        try:
-            response = self._session.post(
-                self._url("/api/updatedevicetoken/"),
-                json=payload,
-                headers={"auth_token": self._auth_token},
-                timeout=self._timeout,
-            )
-            response.raise_for_status()
-        except requests.exceptions.RequestException as exc:
-            raise PinergyHTTPError(str(exc)) from exc
-
-        data = response.json()
-        _raise_for_api_error(data)
+        data = self._request(
+            "POST", "/api/updatedevicetoken/", json=payload, authenticated=True
+        )
         return bool(data.get("success"))
 
     # ------------------------------------------------------------------
     # Version (unauthenticated)
     # ------------------------------------------------------------------
 
-    def get_version(self) -> dict:
+    def get_version(self) -> Dict[str, Any]:
         """Return the raw version config JSON (unauthenticated).
 
         Returns:
             Parsed JSON dict from ``/version.json``.
         """
-        try:
-            response = self._session.get(
-                self._url("/version.json"),
-                timeout=self._timeout,
-            )
-            response.raise_for_status()
-        except requests.exceptions.RequestException as exc:
-            raise PinergyHTTPError(str(exc)) from exc
-        return response.json()
+        return self._request("GET", "/version.json", check_api_error=False)
 
     def __repr__(self) -> str:
         auth_status = "authenticated" if self.is_authenticated else "unauthenticated"
@@ -370,10 +438,14 @@ class PinergyClient:
 # ---------------------------------------------------------------------------
 
 
-def _raise_for_api_error(data: dict) -> None:
+def _raise_for_api_error(data: Dict[str, Any]) -> None:
     """Raise :class:`~pypinergy.exceptions.PinergyAPIError` if *data* signals failure."""
     if not data.get("success", True):
+        try:
+            error_code = int(data.get("error_code") or 0)
+        except (TypeError, ValueError):
+            error_code = 0
         raise PinergyAPIError(
             message=data.get("message") or "API returned an error",
-            error_code=int(data.get("error_code", 0)),
+            error_code=error_code,
         )

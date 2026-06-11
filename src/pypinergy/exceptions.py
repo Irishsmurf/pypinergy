@@ -30,3 +30,23 @@ class PinergyAPIError(PinergyError):
 
 class PinergyHTTPError(PinergyError):
     """Raised when an unexpected HTTP-level error occurs (e.g. 5xx, timeout)."""
+
+
+class PinergyTimeoutError(PinergyHTTPError):
+    """Raised when a request exceeds the configured timeout.
+
+    Subclasses :class:`PinergyHTTPError`, so existing ``except PinergyHTTPError``
+    handlers continue to catch timeouts exactly as before.
+    """
+
+
+class PinergyResponseError(PinergyError, ValueError):
+    """Raised when the API returns a payload that cannot be interpreted.
+
+    Covers malformed JSON bodies, non-object top-level JSON, and successful
+    responses that are missing structurally required fields (e.g. a login
+    response without an ``auth_token``).
+
+    Also subclasses :class:`ValueError`, so callers that previously caught the
+    raw JSON decoding error (a ``ValueError`` subclass) keep working.
+    """
