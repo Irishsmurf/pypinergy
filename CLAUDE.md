@@ -10,6 +10,7 @@ Full project guide (layout, conventions, common tasks): @AGENTS.md
 - **`.env` contains real account credentials.** Never print, commit, or copy its contents.
 - **Version bumps:** update `version` in `pyproject.toml` AND `__version__` in `src/pypinergy/__init__.py` — they must match (`test_version_matches_pyproject` enforces this).
 - **Commits:** use conventional-commit prefixes (`feat:`, `fix:`, `perf:`, `chore:`, `docs:`, `test:`).
+- **README:** any change to the public API or workflows must update README.md in the same piece of work (examples, field tables, exception table, release instructions).
 - **Security invariants** (see `.jules/sentinel.md` for history) — do not regress:
   - Base URL must be HTTPS (localhost excepted).
   - The session disables redirects (`_NoRedirectSession`) to prevent auth-header leakage.
