@@ -63,11 +63,6 @@ def _as_dict(val: Any) -> Dict[str, Any]:
     return val if isinstance(val, dict) else {}
 
 
-def _as_list(val: Any) -> List[Any]:
-    """Return *val* if it is a list, else ``[]`` (defends against ``null`` arrays)."""
-    return val if isinstance(val, list) else []
-
-
 def _parse_ts_pair(ts: Any) -> Tuple[Optional[int], Optional[datetime]]:
     """Parse a timestamp into both its integer and datetime representations."""
     if ts is None or ts == "":
@@ -199,7 +194,7 @@ class LoginResponse:
             account_type=_to_str(d.get("account_type")),
             user=User._from_dict(_as_dict(d.get("user"))),
             house=House._from_dict(_as_dict(d.get("house"))),
-            credit_cards=[_cc_from_dict(x) for x in _as_list(d.get("credit_cards"))],
+            credit_cards=[_cc_from_dict(x) for x in (d.get("credit_cards") or ())],
         )
 
 
@@ -265,9 +260,9 @@ class UsageResponse:
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _ue_from_dict = UsageEntry._from_dict
         return cls(
-            day=[_ue_from_dict(x) for x in _as_list(d.get("day"))],
-            week=[_ue_from_dict(x) for x in _as_list(d.get("week"))],
-            month=[_ue_from_dict(x) for x in _as_list(d.get("month"))],
+            day=[_ue_from_dict(x) for x in (d.get("day") or ())],
+            week=[_ue_from_dict(x) for x in (d.get("week") or ())],
+            month=[_ue_from_dict(x) for x in (d.get("month") or ())],
         )
 
 
@@ -304,9 +299,10 @@ class LevelPayUsageResponse:
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _lp_from_dict = LevelPayDailyValue._from_dict
         return cls(
-            labels=_as_list(daily.get("labels")),
-            flags=_as_list(daily.get("flags")),
-            values=[_lp_from_dict(x) for x in _as_list(daily.get("values"))],
+            # Performance optimization note: Replaced _as_list() with (d.get(key) or []) to avoid function call and list allocation overhead on the happy path.
+            labels=(daily.get("labels") or []),
+            flags=(daily.get("flags") or []),
+            values=[_lp_from_dict(x) for x in (daily.get("values") or ())],
         )
 
 
@@ -415,8 +411,8 @@ class ActiveTopUpsResponse:
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _st_from_dict = ScheduledTopUp._from_dict
         return cls(
-            scheduled=[_st_from_dict(x) for x in _as_list(d.get("scheduled"))],
-            auto_top_ups=_as_list(d.get("auto_top_ups")),
+            scheduled=[_st_from_dict(x) for x in (d.get("scheduled") or ())],
+            auto_top_ups=(d.get("auto_top_ups") or []),
         )
 
 
@@ -497,10 +493,10 @@ class ConfigInfoResponse:
     def _from_dict(cls, d: Mapping[str, Any]) -> "ConfigInfoResponse":
         d = _as_dict(d)
         return cls(
-            thresholds=_as_list(d.get("thresholds")),
-            top_up_amounts=_as_list(d.get("top_up_amounts")),
-            auto_up_amounts=_as_list(d.get("auto_up_amounts")),
-            scheduled_top_up_amounts=_as_list(d.get("scheduled_top_up_amounts")),
+            thresholds=(d.get("thresholds") or []),
+            top_up_amounts=(d.get("top_up_amounts") or []),
+            auto_up_amounts=(d.get("auto_up_amounts") or []),
+            scheduled_top_up_amounts=(d.get("scheduled_top_up_amounts") or []),
         )
 
 
@@ -547,8 +543,8 @@ class DefaultsInfoResponse:
         _ht_from_dict = HouseType._from_dict
         _heat_from_dict = HeatingType._from_dict
         return cls(
-            house_types=[_ht_from_dict(x) for x in _as_list(d.get("house_types"))],
-            heating_types=[_heat_from_dict(x) for x in _as_list(d.get("heating_types"))],
+            house_types=[_ht_from_dict(x) for x in (d.get("house_types") or ())],
+            heating_types=[_heat_from_dict(x) for x in (d.get("heating_types") or ())],
             max_bedrooms=_to_int(d.get("max_bedrooms")),
             default_bedrooms=_to_int(d.get("default_bedrooms")),
             max_adults=_to_int(d.get("max_adults")),
