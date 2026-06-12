@@ -1,9 +1,10 @@
 # pypinergy
 
-[![CI](https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml/badge.svg)](https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml)
+[![PyPI version](https://img.shields.io/pypi/v/pypinergy)](https://pypi.org/project/pypinergy/)
+[![Python versions](https://img.shields.io/pypi/pyversions/pypinergy)](https://pypi.org/project/pypinergy/)
+[![CI Status](https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml/badge.svg)](https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/irishsmurf/pypinergy/graph/badge.svg)](https://codecov.io/gh/irishsmurf/pypinergy)
-[![PyPI](https://img.shields.io/pypi/v/pypinergy)](https://pypi.org/project/pypinergy/)
-[![Python](https://img.shields.io/pypi/pyversions/pypinergy)](https://pypi.org/project/pypinergy/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A Python client library for the [Pinergy](https://www.pinergy.ie) smart-meter API.
