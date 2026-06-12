@@ -5,9 +5,16 @@
 [![CI Status](https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml/badge.svg)](https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/irishsmurf/pypinergy/graph/badge.svg)](https://codecov.io/gh/irishsmurf/pypinergy)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Documentation](https://img.shields.io/badge/docs-MkDocs-blue.svg)](https://irishsmurf.github.io/pypinergy/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A Python client library for the [Pinergy](https://www.pinergy.ie) smart-meter API.
+
+---
+
+**Full Documentation:** [https://irishsmurf.github.io/pypinergy/](https://irishsmurf.github.io/pypinergy/)
+
+---
 
 > **Note:** This library is built on a reverse-engineered, unofficial API.
 > It is not affiliated with or endorsed by Pinergy.
