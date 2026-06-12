@@ -35,7 +35,7 @@ jobs:
         run: python -m pytest tests/integration/ -m network -v
 
       - name: Upload coverage
-        if: matrix.python-version == '3.12'
+        if: always() && matrix.python-version == '3.12'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
