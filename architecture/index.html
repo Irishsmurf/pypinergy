@@ -774,7 +774,7 @@
 4. If an authenticated request fails with an "invalid token" error (HTTP 401 or a specific API message), the client clears the token and raises <code>PinergyAuthError</code>, allowing the <em>next</em> call to transparently re-authenticate.</p>
 <h3 id="lazy-authentication-flow">Lazy Authentication Flow</h3>
 <p>The following diagram illustrates how the client handles authentication transparently during an API request.</p>
-<pre><code class="language-mermaid">sequenceDiagram
+<pre class="mermaid"><code>sequenceDiagram
     participant User
     participant Client as PinergyClient
     participant API as Pinergy API
@@ -795,8 +795,7 @@
         Note over Client: Clear Stale Token
         Client--&gt;&gt;User: Raise PinergyAuthError
         Note over User: Next call will re-auth
-    end
-</code></pre>
+    end</code></pre>
 <h3 id="connection-pooling">Connection Pooling</h3>
 <p>By inheriting from or wrapping <code>requests.Session</code>, the client benefits from HTTP Persistent Connections (keep-alive). This significantly reduces latency for subsequent API calls.</p>
 <hr />

@@ -982,26 +982,26 @@
 <p>This guide provides a comprehensive overview of how to use <strong>PyPinergy</strong> to interact with your Pinergy smart-meter data.</p>
 <h2 id="installation">Installation</h2>
 <p>PyPinergy requires <strong>Python 3.9+</strong> and the <code>requests</code> library.</p>
-<pre><code class="language-bash">pip install pypinergy
-</code></pre>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>pypinergy
+</code></pre></div>
 <h2 id="getting-started">Getting Started</h2>
 <p>The primary entry point is the <code>PinergyClient</code> class. It manages authentication and connection pooling.</p>
 <h3 id="context-manager-recommended">Context Manager (Recommended)</h3>
 <p>Using the client as a context manager ensures that the underlying HTTP connection pool is closed deterministically when you're done.</p>
-<pre><code class="language-python">from pypinergy import PinergyClient
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pypinergy</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinergyClient</span>
 
-with PinergyClient(&quot;you@example.com&quot;, &quot;your-password&quot;) as client:
-    balance = client.get_balance()
-    print(f&quot;Balance: €{balance.credit_balance:.2f}&quot;)
-</code></pre>
+<span class="k">with</span> <span class="n">PinergyClient</span><span class="p">(</span><span class="s2">&quot;you@example.com&quot;</span><span class="p">,</span> <span class="s2">&quot;your-password&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+    <span class="n">balance</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_balance</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Balance: €</span><span class="si">{</span><span class="n">balance</span><span class="o">.</span><span class="n">credit_balance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="manual-lifecycle-management">Manual Lifecycle Management</h3>
 <p>If you can't use a context manager, remember to call <code>.close()</code> to release resources.</p>
-<pre><code class="language-python">client = PinergyClient(&quot;you@example.com&quot;, &quot;your-password&quot;)
-try:
-    balance = client.get_balance()
-finally:
-    client.close()
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">client</span> <span class="o">=</span> <span class="n">PinergyClient</span><span class="p">(</span><span class="s2">&quot;you@example.com&quot;</span><span class="p">,</span> <span class="s2">&quot;your-password&quot;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">balance</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_balance</span><span class="p">()</span>
+<span class="k">finally</span><span class="p">:</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div>
 <hr />
 <h2 id="authentication">Authentication</h2>
 <p>PyPinergy implements <strong>lazy authentication</strong>. You don't need to call <code>.login()</code> explicitly; the client will authenticate automatically on the first API call that requires it.</p>
@@ -1009,66 +1009,66 @@ finally:
 <p>Lazy login is thread-safe. If multiple threads make their first API call simultaneously, they will wait for a single shared login operation to complete.</p>
 <h3 id="explicit-login">Explicit Login</h3>
 <p>If you need the detailed account information returned upon login (such as premises number or saved credit cards), you can call <code>.login()</code> manually.</p>
-<pre><code class="language-python">login = client.login()
-print(f&quot;Account: {login.premises_number}&quot;)
-for card in login.credit_cards:
-    print(f&quot;Card ending in {card.last_4_digits}&quot;)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">login</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Account: </span><span class="si">{</span><span class="n">login</span><span class="o">.</span><span class="n">premises_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="n">login</span><span class="o">.</span><span class="n">credit_cards</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Card ending in </span><span class="si">{</span><span class="n">card</span><span class="o">.</span><span class="n">last_4_digits</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="logout">Logout</h3>
 <p>Calling <code>.logout()</code> clears the stored authentication token and discards the internal password hash. Subsequent calls will raise <code>PinergyAuthError</code> immediately.</p>
-<pre><code class="language-python">client.logout()
-# client.get_balance()  # This would now raise PinergyAuthError
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">client</span><span class="o">.</span><span class="n">logout</span><span class="p">()</span>
+<span class="c1"># client.get_balance()  # This would now raise PinergyAuthError</span>
+</code></pre></div>
 <hr />
 <h2 id="retrieving-data">Retrieving Data</h2>
 <h3 id="balance-and-meter-status">Balance and Meter Status</h3>
 <p>The <code>get_balance()</code> method returns real-time info about your credit and meter.</p>
-<pre><code class="language-python">bal = client.get_balance()
+<div class="highlight"><pre><span></span><code><span class="n">bal</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_balance</span><span class="p">()</span>
 
-print(f&quot;Current balance: €{bal.credit_balance:.2f}&quot;)
-print(f&quot;Days remaining:  {bal.top_up_in_days}&quot;)
-print(f&quot;Meter Reading:   {bal.last_reading:%Y-%m-%d %H:%M}&quot;)
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current balance: €</span><span class="si">{</span><span class="n">bal</span><span class="o">.</span><span class="n">credit_balance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Days remaining:  </span><span class="si">{</span><span class="n">bal</span><span class="o">.</span><span class="n">top_up_in_days</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Meter Reading:   </span><span class="si">{</span><span class="n">bal</span><span class="o">.</span><span class="n">last_reading</span><span class="si">:</span><span class="s2">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-if bal.credit_low:
-    print(&quot;Warning: Credit is low!&quot;)
-</code></pre>
+<span class="k">if</span> <span class="n">bal</span><span class="o">.</span><span class="n">credit_low</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Credit is low!&quot;</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="usage-statistics-smartpayg">Usage Statistics (Smart/PAYG)</h3>
 <p>For standard Smart/PAYG accounts, use <code>get_usage()</code>. It returns data aggregated into daily, weekly, and monthly buckets.</p>
-<pre><code class="language-python">usage = client.get_usage()
+<div class="highlight"><pre><span></span><code><span class="n">usage</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_usage</span><span class="p">()</span>
 
-# Daily data for the last 7 days
-for day in usage.day:
-    print(f&quot;{day.date:%Y-%m-%d}: {day.kwh:.2f} kWh (€{day.amount:.2f})&quot;)
-</code></pre>
+<span class="c1"># Daily data for the last 7 days</span>
+<span class="k">for</span> <span class="n">day</span> <span class="ow">in</span> <span class="n">usage</span><span class="o">.</span><span class="n">day</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="o">.</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y-%m-%d</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">day</span><span class="o">.</span><span class="n">kwh</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> kWh (€</span><span class="si">{</span><span class="n">day</span><span class="o">.</span><span class="n">amount</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="usage-statistics-level-pay">Usage Statistics (Level Pay)</h3>
 <p>If you are a Level Pay customer, use <code>get_level_pay_usage()</code> for half-hourly interval data.</p>
-<pre><code class="language-python">lp_usage = client.get_level_pay_usage()
-print(&quot;Interval labels:&quot;, lp_usage.labels[:5])
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">lp_usage</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_level_pay_usage</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Interval labels:&quot;</span><span class="p">,</span> <span class="n">lp_usage</span><span class="o">.</span><span class="n">labels</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</code></pre></div>
 <h3 id="comparisons">Comparisons</h3>
 <p>Compare your usage against the average for similar homes in your area.</p>
-<pre><code class="language-python">cmp = client.compare_usage()
-day = cmp.day
-print(f&quot;Your usage: {day.kwh.users_home:.1f} kWh&quot;)
-print(f&quot;Average:    {day.kwh.average_home:.1f} kWh&quot;)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">cmp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">compare_usage</span><span class="p">()</span>
+<span class="n">day</span> <span class="o">=</span> <span class="n">cmp</span><span class="o">.</span><span class="n">day</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Your usage: </span><span class="si">{</span><span class="n">day</span><span class="o">.</span><span class="n">kwh</span><span class="o">.</span><span class="n">users_home</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> kWh&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average:    </span><span class="si">{</span><span class="n">day</span><span class="o">.</span><span class="n">kwh</span><span class="o">.</span><span class="n">average_home</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> kWh&quot;</span><span class="p">)</span>
+</code></pre></div>
 <hr />
 <h2 id="configuration-and-metadata">Configuration and Metadata</h2>
 <h3 id="top-up-info">Top-Up Info</h3>
 <p>View scheduled top-ups and valid top-up amounts.</p>
-<pre><code class="language-python">topups = client.get_active_topups()
-for sched in topups.scheduled:
-    print(f&quot;Scheduled: €{sched.top_up_amount} on day {sched.top_up_day}&quot;)
+<div class="highlight"><pre><span></span><code><span class="n">topups</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_active_topups</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">sched</span> <span class="ow">in</span> <span class="n">topups</span><span class="o">.</span><span class="n">scheduled</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scheduled: €</span><span class="si">{</span><span class="n">sched</span><span class="o">.</span><span class="n">top_up_amount</span><span class="si">}</span><span class="s2"> on day </span><span class="si">{</span><span class="n">sched</span><span class="o">.</span><span class="n">top_up_day</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-config = client.get_config_info()
-print(&quot;Allowed top-up amounts:&quot;, config.top_up_amounts)
-</code></pre>
+<span class="n">config</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_config_info</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Allowed top-up amounts:&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">top_up_amounts</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="notification-preferences">Notification Preferences</h3>
 <p>Check how Pinergy contacts you.</p>
-<pre><code class="language-python">prefs = client.get_notification_preferences()
-print(f&quot;SMS enabled: {prefs.sms}&quot;)
-print(f&quot;Email enabled: {prefs.email}&quot;)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">prefs</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_notification_preferences</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SMS enabled: </span><span class="si">{</span><span class="n">prefs</span><span class="o">.</span><span class="n">sms</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Email enabled: </span><span class="si">{</span><span class="n">prefs</span><span class="o">.</span><span class="n">email</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
 <hr />
 <h2 id="error-handling">Error Handling</h2>
 <p>All library exceptions inherit from <code>PinergyError</code>.</p>
@@ -1103,25 +1103,25 @@ print(f&quot;Email enabled: {prefs.email}&quot;)
 </tbody>
 </table>
 <p>Example:</p>
-<pre><code class="language-python">from pypinergy.exceptions import PinergyError, PinergyAuthError
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pypinergy.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinergyError</span><span class="p">,</span> <span class="n">PinergyAuthError</span>
 
-try:
-    balance = client.get_balance()
-except PinergyAuthError:
-    print(&quot;Please check your credentials.&quot;)
-except PinergyError as e:
-    print(f&quot;An error occurred: {e}&quot;)
-</code></pre>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">balance</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_balance</span><span class="p">()</span>
+<span class="k">except</span> <span class="n">PinergyAuthError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Please check your credentials.&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">PinergyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
 <hr />
 <h2 id="advanced-usage">Advanced Usage</h2>
 <h3 id="custom-timeout">Custom Timeout</h3>
 <p>You can specify a timeout (in seconds) for all API calls.</p>
-<pre><code class="language-python">client = PinergyClient(&quot;email&quot;, &quot;password&quot;, timeout=10.0)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">client</span> <span class="o">=</span> <span class="n">PinergyClient</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="proxying-and-testing">Proxying and Testing</h3>
 <p>If you need to route requests through a proxy or a local mock server, override the <code>base_url</code>.</p>
-<pre><code class="language-python">client = PinergyClient(&quot;email&quot;, &quot;password&quot;, base_url=&quot;http://localhost:8080&quot;)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">client</span> <span class="o">=</span> <span class="n">PinergyClient</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;http://localhost:8080&quot;</span><span class="p">)</span>
+</code></pre></div>
 
 
 

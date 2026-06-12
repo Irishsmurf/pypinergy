@@ -650,44 +650,44 @@
 <ol>
 <li>
 <p><strong>Clone the repository:</strong>
-   <code>bash
-   git clone https://github.com/irishsmurf/pypinergy.git
-   cd pypinergy</code></p>
+   <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/irishsmurf/pypinergy.git
+<span class="nb">cd</span><span class="w"> </span>pypinergy
+</code></pre></div></p>
 </li>
 <li>
 <p><strong>Install in editable mode with dev dependencies:</strong>
-   <code>bash
-   pip install -e ".[dev]"</code></p>
+   <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
+</code></pre></div></p>
 </li>
 </ol>
 <h2 id="coding-standards">Coding Standards</h2>
 <ul>
 <li><strong>Type Hints:</strong> All public methods and functions must have type hints.</li>
 <li><strong>Linting:</strong> We use <a href="https://github.com/astral-sh/ruff">Ruff</a> for linting and formatting. Run it with:
-  <code>bash
-  ruff check .
-  ruff format .</code></li>
+  <div class="highlight"><pre><span></span><code>ruff<span class="w"> </span>check<span class="w"> </span>.
+ruff<span class="w"> </span>format<span class="w"> </span>.
+</code></pre></div></li>
 <li><strong>Static Analysis:</strong> Use <code>mypy</code> to verify types:
-  <code>bash
-  mypy src/pypinergy</code></li>
+  <div class="highlight"><pre><span></span><code>mypy<span class="w"> </span>src/pypinergy
+</code></pre></div></li>
 </ul>
 <h2 id="testing">Testing</h2>
 <p>We use <code>pytest</code> for all tests.</p>
 <h3 id="unit-tests">Unit Tests</h3>
-<p>Unit tests use the <code>responses</code> library to mock API calls. They do not require an internet connection or Pinergy credentials.</p>
-<pre><code class="language-bash">pytest tests/unit/
-</code></pre>
+<p>Unit tests use the <code>responses</code> library to mock API calls. They do not require an internet connection or Pinergy credentials.
+<div class="highlight"><pre><span></span><code>pytest<span class="w"> </span>tests/unit/
+</code></pre></div></p>
 <h3 id="integration-tests">Integration Tests</h3>
 <p>Integration tests hit the real Pinergy API.</p>
 <ul>
 <li><strong>Network-only (no credentials):</strong>
-  <code>bash
-  pytest tests/integration/ -m network</code></li>
+  <div class="highlight"><pre><span></span><code>pytest<span class="w"> </span>tests/integration/<span class="w"> </span>-m<span class="w"> </span>network
+</code></pre></div></li>
 <li><strong>Full (requires credentials):</strong>
-  <code>bash
-  export PINERGY_EMAIL="your-email"
-  export PINERGY_PASSWORD="your-password"
-  pytest tests/integration/</code></li>
+  <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">PINERGY_EMAIL</span><span class="o">=</span><span class="s2">&quot;your-email&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">PINERGY_PASSWORD</span><span class="o">=</span><span class="s2">&quot;your-password&quot;</span>
+pytest<span class="w"> </span>tests/integration/
+</code></pre></div></li>
 </ul>
 <h2 id="adding-a-new-endpoint">Adding a New Endpoint</h2>
 <ol>
