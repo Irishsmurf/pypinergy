@@ -41,6 +41,35 @@ The client doesn't log in upon instantiation. Instead:
 3. If `None`, it acquires an `RLock` and performs the login.
 4. If an authenticated request fails with an "invalid token" error (HTTP 401 or a specific API message), the client clears the token and raises `PinergyAuthError`, allowing the *next* call to transparently re-authenticate.
 
+### Lazy Authentication Flow
+
+The following diagram illustrates how the client handles authentication transparently during an API request.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Client as PinergyClient
+    participant API as Pinergy API
+
+    User->>Client: get_balance()
+    Note over Client: _ensure_auth()
+    alt No Token
+        Client->>API: POST /api/login/
+        API-->>Client: 200 OK (auth_token)
+        Note over Client: Store Token
+    end
+    Client->>API: GET /api/balance/ (with token)
+    alt Token Valid
+        API-->>Client: 200 OK (Balance Data)
+        Client-->>User: BalanceResponse
+    else Token Expired (401 or Error Message)
+        API-->>Client: 401 Unauthorized
+        Note over Client: Clear Stale Token
+        Client-->>User: Raise PinergyAuthError
+        Note over User: Next call will re-auth
+    end
+```
+
 ### Connection Pooling
 
 By inheriting from or wrapping `requests.Session`, the client benefits from HTTP Persistent Connections (keep-alive). This significantly reduces latency for subsequent API calls.
