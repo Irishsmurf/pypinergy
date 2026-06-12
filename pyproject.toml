@@ -60,7 +60,7 @@ files = ["src/pypinergy"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=pypinergy --cov-report=term-missing"
+addopts = "--cov-report=term-missing"
 markers = [
     "network: hits the real Pinergy API (no credentials required, but needs network access)",
 ]
