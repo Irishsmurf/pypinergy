@@ -428,6 +428,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#lazy-authentication-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lazy Authentication Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#connection-pooling" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -488,6 +499,33 @@
     
   
     API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
   
 
     
@@ -638,6 +676,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#lazy-authentication-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lazy Authentication Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#connection-pooling" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -723,6 +772,31 @@
 2. <code>_ensure_auth()</code> checks if <code>_auth_token</code> is <code>None</code>.
 3. If <code>None</code>, it acquires an <code>RLock</code> and performs the login.
 4. If an authenticated request fails with an "invalid token" error (HTTP 401 or a specific API message), the client clears the token and raises <code>PinergyAuthError</code>, allowing the <em>next</em> call to transparently re-authenticate.</p>
+<h3 id="lazy-authentication-flow">Lazy Authentication Flow</h3>
+<p>The following diagram illustrates how the client handles authentication transparently during an API request.</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant User
+    participant Client as PinergyClient
+    participant API as Pinergy API
+
+    User-&gt;&gt;Client: get_balance()
+    Note over Client: _ensure_auth()
+    alt No Token
+        Client-&gt;&gt;API: POST /api/login/
+        API--&gt;&gt;Client: 200 OK (auth_token)
+        Note over Client: Store Token
+    end
+    Client-&gt;&gt;API: GET /api/balance/ (with token)
+    alt Token Valid
+        API--&gt;&gt;Client: 200 OK (Balance Data)
+        Client--&gt;&gt;User: BalanceResponse
+    else Token Expired (401 or Error Message)
+        API--&gt;&gt;Client: 401 Unauthorized
+        Note over Client: Clear Stale Token
+        Client--&gt;&gt;User: Raise PinergyAuthError
+        Note over User: Next call will re-auth
+    end
+</code></pre>
 <h3 id="connection-pooling">Connection Pooling</h3>
 <p>By inheriting from or wrapping <code>requests.Session</code>, the client benefits from HTTP Persistent Connections (keep-alive). This significantly reduces latency for subsequent API calls.</p>
 <hr />
