@@ -9,26 +9,28 @@
       
       
       
+        <link rel="prev" href="../user-guide/">
       
-        <link rel="next" href="user-guide/">
+      
+        <link rel="next" href="../reference/">
       
       
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>PyPinergy</title>
+        <title>Architecture - PyPinergy</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -47,9 +49,9 @@
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -72,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#pypinergy-documentation" class="md-skip">
+        <a href="#architecture-deep-dive" class="md-skip">
           Skip to content
         </a>
       
@@ -88,7 +90,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="PyPinergy" class="md-header__button md-logo" aria-label="PyPinergy" data-md-component="logo">
+    <a href=".." title="PyPinergy" class="md-header__button md-logo" aria-label="PyPinergy" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -108,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Architecture
             
           </span>
         </div>
@@ -198,7 +200,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="PyPinergy" class="md-nav__button md-logo" aria-label="PyPinergy" data-md-component="logo">
+    <a href=".." title="PyPinergy" class="md-nav__button md-logo" aria-label="PyPinergy" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -225,6 +227,60 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -244,7 +300,7 @@
   <span class="md-ellipsis">
     
   
-    Home
+    Architecture
   
 
     
@@ -255,14 +311,14 @@
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="." class="md-nav__link md-nav__link--active">
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
     
   
-    Home
+    Architecture
   
 
     
@@ -288,10 +344,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#key-features" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Key Features
+        Overview
       
     </span>
   </a>
@@ -299,10 +355,99 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#core-components" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installation
+        Core Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pinergyclient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PinergyClient
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#models-modelspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Models (models.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exceptions-exceptionspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exceptions (exceptions.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lazy-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lazy Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-pooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connection Pooling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
       
     </span>
   </a>
@@ -310,10 +455,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
+  <a href="#transport-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Start
+        Transport Layer
       
     </span>
   </a>
@@ -335,61 +480,7 @@
   
   
     <li class="md-nav__item">
-      <a href="user-guide/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    User Guide
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="reference/" class="md-nav__link">
+      <a href="../reference/" class="md-nav__link">
         
   
   
@@ -416,7 +507,7 @@
   
   
     <li class="md-nav__item">
-      <a href="changelog/" class="md-nav__link">
+      <a href="../changelog/" class="md-nav__link">
         
   
   
@@ -463,10 +554,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#key-features" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Key Features
+        Overview
       
     </span>
   </a>
@@ -474,10 +565,99 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#core-components" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installation
+        Core Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pinergyclient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PinergyClient
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#models-modelspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Models (models.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exceptions-exceptionspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exceptions (exceptions.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lazy-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lazy Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-pooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connection Pooling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
       
     </span>
   </a>
@@ -485,10 +665,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
+  <a href="#transport-layer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Start
+        Transport Layer
       
     </span>
   </a>
@@ -515,25 +695,56 @@
   
 
 
-<h1 id="pypinergy-documentation">PyPinergy Documentation</h1>
-<p>Welcome to the documentation for <strong>PyPinergy</strong>, an unofficial Python client library for the Pinergy smart-meter API.</p>
-<h2 id="key-features">Key Features</h2>
+<h1 id="architecture-deep-dive">Architecture Deep Dive</h1>
+<p>This document details the internal design and architectural decisions of the <strong>PyPinergy</strong> library.</p>
+<h2 id="overview">Overview</h2>
+<p>PyPinergy is designed as a lightweight, thread-safe, and defensive wrapper around the unofficial Pinergy API. It prioritizes ease of use (via lazy authentication) and stability (via defensive parsing).</p>
+<hr />
+<h2 id="core-components">Core Components</h2>
+<h3 id="pinergyclient"><code>PinergyClient</code></h3>
+<p>The <code>PinergyClient</code> (in <code>client.py</code>) is the primary interface. It orchestrates:
+- <strong>Session Management:</strong> Uses a custom <code>requests.Session</code> subclass (<code>_NoRedirectSession</code>) to manage connection pooling and prevent header leakage during redirects.
+- <strong>Lazy Authentication:</strong> Implements a double-checked locking pattern using <code>threading.RLock</code> to ensure that authentication is performed exactly once (even in multi-threaded environments) only when a protected endpoint is hit.
+- <strong>Request/Response Lifecycle:</strong> Handles URL building, header management (including <code>auth_token</code> injection), and mapping HTTP/JSON errors to the internal <code>PinergyError</code> hierarchy.</p>
+<h3 id="models-modelspy">Models (<code>models.py</code>)</h3>
+<p>Data returned from the API is modeled using standard Python <code>dataclasses</code>.</p>
 <ul>
-<li><strong>Lazy Authentication:</strong> Client logs in automatically when needed.</li>
-<li><strong>Smart/PAYG Support:</strong> Detailed usage data (daily, weekly, monthly).</li>
-<li><strong>Balance Tracking:</strong> Credit balance, estimated days remaining, and meter readings.</li>
-<li><strong>Top-Ups:</strong> View scheduled and auto top-ups.</li>
-<li><strong>Usage Comparison:</strong> Compare your usage against similar homes.</li>
+<li><strong>Defensive Parsing:</strong> Each model implements a <code>_from_dict</code> class method. These methods use coercion helpers (<code>_to_int</code>, <code>_to_float</code>, <code>_as_dict</code>, etc.) to ensure that missing keys, <code>null</code> values, or unexpected types in the API response do not cause crashes. Fields instead fall back to sensible defaults (e.g., <code>0</code>, <code>""</code>, or <code>None</code>).</li>
+<li><strong>Performance:</strong> For high-volume data (like usage entries), the models use <code>slots=True</code> (on Python 3.10+) to reduce memory footprint and improve attribute access speed.</li>
 </ul>
-<h2 id="installation">Installation</h2>
-<pre><code class="language-bash">pip install pypinergy
-</code></pre>
-<h2 id="quick-start">Quick Start</h2>
-<pre><code class="language-python">from pypinergy import PinergyClient
-
-with PinergyClient(&quot;email&quot;, &quot;password&quot;) as client:
-    print(client.get_balance())
-</code></pre>
+<h3 id="exceptions-exceptionspy">Exceptions (<code>exceptions.py</code>)</h3>
+<p>A flat hierarchy of exceptions rooted at <code>PinergyError</code>.
+- <strong>Granular Errors:</strong> Separates transport-level issues (<code>PinergyHTTPError</code>, <code>PinergyTimeoutError</code>) from application-level issues (<code>PinergyAPIError</code>) and session issues (<code>PinergyAuthError</code>).</p>
+<hr />
+<h2 id="design-patterns">Design Patterns</h2>
+<h3 id="lazy-authentication">Lazy Authentication</h3>
+<p>The client doesn't log in upon instantiation. Instead:
+1. An API method calls <code>_ensure_auth()</code>.
+2. <code>_ensure_auth()</code> checks if <code>_auth_token</code> is <code>None</code>.
+3. If <code>None</code>, it acquires an <code>RLock</code> and performs the login.
+4. If an authenticated request fails with an "invalid token" error (HTTP 401 or a specific API message), the client clears the token and raises <code>PinergyAuthError</code>, allowing the <em>next</em> call to transparently re-authenticate.</p>
+<h3 id="connection-pooling">Connection Pooling</h3>
+<p>By inheriting from or wrapping <code>requests.Session</code>, the client benefits from HTTP Persistent Connections (keep-alive). This significantly reduces latency for subsequent API calls.</p>
+<hr />
+<h2 id="security-considerations">Security Considerations</h2>
+<ol>
+<li><strong>Password Hashing:</strong> Passwords are never stored in plaintext within the client. They are hashed immediately upon instantiation using a SHA-256 scheme required by the Pinergy API.</li>
+<li><strong>Credential Discarding:</strong> When <code>.logout()</code> is called, both the <code>auth_token</code> and the hashed password are deleted. This prevents the client object from being used for any further network activity.</li>
+<li><strong>No Redirects:</strong> The <code>_NoRedirectSession</code> ensures that sensitive headers (like <code>auth_token</code>) are not accidentally sent to a third-party domain if the API were to issue a redirect.</li>
+<li><strong>HTTPS Enforcement:</strong> The client enforces <code>https://</code> for the <code>base_url</code> (except for <code>localhost</code>) to prevent credential leakage over unencrypted channels.</li>
+</ol>
+<hr />
+<h2 id="transport-layer">Transport Layer</h2>
+<p>The library uses the <code>requests</code> library for all network I/O. </p>
+<ul>
+<li><strong>Timeout Management:</strong> A global timeout is applied to all requests to prevent the client from hanging indefinitely.</li>
+<li><strong>Error Mapping:</strong> <ul>
+<li><code>requests.Timeout</code> → <code>PinergyTimeoutError</code></li>
+<li><code>response.raise_for_status()</code> → <code>PinergyHTTPError</code> (with special handling for 401)</li>
+<li><code>response.json()</code> failures → <code>PinergyResponseError</code></li>
+</ul>
+</li>
+</ul>
 
 
 
@@ -583,10 +794,10 @@ with PinergyClient(&quot;email&quot;, &quot;password&quot;) as client:
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": [], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

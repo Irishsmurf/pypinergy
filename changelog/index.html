@@ -255,6 +255,60 @@
   
   
     <li class="md-nav__item">
+      <a href="../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../reference/" class="md-nav__link">
         
   
@@ -351,7 +405,33 @@
 
 
 <h1 id="changelog">Changelog</h1>
-<p>{% include "CHANGELOG.md" %}</p>
+<h1 id="changelog_1">Changelog</h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="017-2026-06-11">[0.1.7] - 2026-06-11</h2>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li>Raise <code>PinergyAuthError</code> for token rejection reported as <code>success:false</code> with HTTP 200. Stale tokens are now dropped automatically.</li>
+</ul>
+<h2 id="016-2026-06-11">[0.1.6] - 2026-06-11</h2>
+<h3 id="added">Added</h3>
+<ul>
+<li>Context manager support for <code>PinergyClient</code>.</li>
+<li><code>PinergyTimeoutError</code> and <code>PinergyResponseError</code> exceptions.</li>
+<li><code>*_dt</code> alias fields in models for better naming consistency.</li>
+<li>Automatic token self-healing on 401 errors.</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li>Improved model parsing robustness.</li>
+<li>Hardened client lifecycle management.</li>
+</ul>
+<h2 id="010-2026-06-01">[0.1.0] - 2026-06-01</h2>
+<h3 id="added_1">Added</h3>
+<ul>
+<li>Initial release with support for usage, balance, top-ups, and comparison.</li>
+</ul>
 
 
 
