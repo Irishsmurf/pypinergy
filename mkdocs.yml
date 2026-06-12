@@ -8,6 +8,8 @@ theme:
 
 nav:
   - Home: index.md
+  - User Guide: user-guide.md
+  - Architecture: architecture.md
   - API Reference: reference.md
   - Changelog: changelog.md
 
@@ -17,3 +19,7 @@ plugins:
       handlers:
         python:
           paths: [src]
+
+markdown_extensions:
+  - pymdownx.snippets:
+      base_path: ["."]
