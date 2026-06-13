@@ -63,4 +63,4 @@ __all__ = [
     "NotificationPreferences",
 ]
 
-__version__ = "0.1.7"
+__version__ = "0.1.8"
