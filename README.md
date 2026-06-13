@@ -1,12 +1,20 @@
-# pypinergy
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/brand/dark_logo.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/brand/logo.svg">
+    <img alt="PyPinergy Logo" src="docs/assets/brand/logo.svg" width="550">
+  </picture>
+</p>
 
-[![PyPI version](https://img.shields.io/pypi/v/pypinergy)](https://pypi.org/project/pypinergy/)
-[![Python versions](https://img.shields.io/pypi/pyversions/pypinergy)](https://pypi.org/project/pypinergy/)
-[![CI Status](https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml/badge.svg)](https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml)
-[![Coverage](https://codecov.io/gh/irishsmurf/pypinergy/graph/badge.svg)](https://codecov.io/gh/irishsmurf/pypinergy)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Documentation](https://img.shields.io/badge/docs-MkDocs-blue.svg)](https://irishsmurf.github.io/pypinergy/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <a href="https://pypi.org/project/pypinergy/"><img src="https://img.shields.io/pypi/v/pypinergy" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/pypinergy/"><img src="https://img.shields.io/pypi/pyversions/pypinergy" alt="Python versions"></a>
+  <a href="https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml"><img src="https://github.com/irishsmurf/pypinergy/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
+  <a href="https://codecov.io/gh/irishsmurf/pypinergy"><img src="https://codecov.io/gh/irishsmurf/pypinergy/graph/badge.svg" alt="Coverage"></a>
+  <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
+  <a href="https://irishsmurf.github.io/pypinergy/"><img src="https://img.shields.io/badge/docs-MkDocs-blue.svg" alt="Documentation"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+</p>
 
 A Python client library for the [Pinergy](https://www.pinergy.ie) smart-meter API.
 

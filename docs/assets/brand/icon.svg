@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="6 6 244 244" width="256" height="256">
+  <!-- Unofficial mark inspired by the Pinergy halo: concentric rings fading
+       outward, blending blue to red, with a bolt marking this as an
+       energy-monitoring integration. -->
+  <defs>
+    <linearGradient id="halo" x1="0%" y1="80%" x2="100%" y2="20%">
+      <stop offset="0%" stop-color="#2E3192"/>
+      <stop offset="50%" stop-color="#93278F"/>
+      <stop offset="100%" stop-color="#E1242D"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Halo rings: opacity builds toward the core -->
+  <circle cx="128" cy="128" r="117" fill="none" stroke="url(#halo)" stroke-width="10" opacity="0.14"/>
+  <circle cx="128" cy="128" r="106" fill="none" stroke="url(#halo)" stroke-width="10" opacity="0.24"/>
+  <circle cx="128" cy="128" r="95"  fill="none" stroke="url(#halo)" stroke-width="10" opacity="0.38"/>
+  <circle cx="128" cy="128" r="84"  fill="none" stroke="url(#halo)" stroke-width="10" opacity="0.56"/>
+  <circle cx="128" cy="128" r="73"  fill="none" stroke="url(#halo)" stroke-width="10" opacity="0.76"/>
+  <circle cx="128" cy="128" r="61"  fill="none" stroke="url(#halo)" stroke-width="12" opacity="1"/>
+
+  <!-- White core -->
+  <circle cx="128" cy="128" r="55" fill="#FFFFFF"/>
+
+  <!-- Bolt -->
+  <path d="M139 92 L106 135 H125 L117 164 L150 121 H131 Z" fill="url(#halo)"/>
+</svg>

@@ -1,4 +1,12 @@
-# PyPinergy Documentation
+# PyPinergy
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/dark_logo.svg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/brand/logo.svg">
+    <img alt="PyPinergy Logo" src="assets/brand/logo.svg" width="550">
+  </picture>
+</p>
 
 Welcome to the documentation for **PyPinergy**, an unofficial Python client library for the Pinergy smart-meter API.
 
