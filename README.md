@@ -1,8 +1,8 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/brand/dark_logo.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/brand/logo.svg">
-    <img alt="PyPinergy Logo" src="docs/assets/brand/logo.svg" width="550">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/irishsmurf/pypinergy/main/docs/assets/brand/dark_logo.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/irishsmurf/pypinergy/main/docs/assets/brand/logo.svg">
+    <img alt="PyPinergy Logo" src="https://raw.githubusercontent.com/irishsmurf/pypinergy/main/docs/assets/brand/logo.svg" width="550">
   </picture>
 </p>
 
