@@ -192,3 +192,36 @@ If you need to route requests through a proxy or a local mock server, override t
 ```python
 client = PinergyClient("email", "password", base_url="http://localhost:8080")
 ```
+
+---
+
+## Troubleshooting
+
+### Token expiry in long-running applications
+
+The client automatically re-authenticates when the API rejects a stale token (HTTP 401 or
+a `success: false` auth error). You do not need to handle token refresh manually — just
+catch `PinergyAuthError` to distinguish a genuine credential failure from a transient
+network issue.
+
+### `PinergyAuthError` after `logout()`
+
+After `logout()`, the client intentionally disables itself: both the auth token and the
+password hash are cleared. Any subsequent API call will raise `PinergyAuthError`
+immediately without attempting the network. This is by design — it prevents accidental
+re-authentication after an explicit sign-out. Create a new `PinergyClient` instance if
+you need to start a fresh session.
+
+### SHA-1 password hashing
+
+The Pinergy mobile API requires passwords to be sent as a SHA-1 hex digest. pypinergy
+implements this to match the upstream specification; there is no alternative. Your
+password is hashed once in memory and never stored or logged. After `login()` succeeds,
+the password hash is discarded.
+
+### Polling frequency
+
+Pinergy meters report readings periodically (typically hourly). Polling more frequently
+than every 5–10 minutes is unlikely to return new data and may increase the risk of
+rate-limiting by the upstream API. The `balance.last_reading` timestamp indicates when
+the most recent meter reading was received.

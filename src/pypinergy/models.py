@@ -281,12 +281,16 @@ class LevelPayDailyValue:
     """Half-hourly label and kWh per tariff band."""
 
     label: str
-    day_kwh: Dict[str, Any]
+    day_kwh: Dict[str, float]
+    """Mapping of tariff band name (e.g. ``"Standard"``) to kWh consumed."""
 
     @classmethod
     def _from_dict(cls, d: Mapping[str, Any]) -> "LevelPayDailyValue":
         d = _as_dict(d)
-        return cls(label=_to_str(d.get("label")), day_kwh=_as_dict(d.get("daykWh")))
+        return cls(
+            label=_to_str(d.get("label")),
+            day_kwh={k: _to_float(v) for k, v in _as_dict(d.get("daykWh")).items()},
+        )
 
 
 @dataclass(**_DATACLASS_KWARGS)
