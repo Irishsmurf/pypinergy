@@ -464,26 +464,50 @@
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="100-2026-06-13">[1.0.0] - 2026-06-13</h2>
+<h3 id="added">Added</h3>
+<ul>
+<li><code>LevelPayDailyValue.day_kwh</code> is now typed as <code>Dict[str, float]</code> (tariff band name → kWh) rather than <code>Dict[str, Any]</code>.</li>
+<li>Expanded API reference documentation to cover all 26 exported symbols.</li>
+<li>Python 3.13 added to CI test matrix.</li>
+<li>Troubleshooting section in the user guide.</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li>PyPI classifier upgraded from <code>4 - Beta</code> to <code>5 - Production/Stable</code>. The public API is stable.</li>
+</ul>
+<h2 id="019-2026-06-12">[0.1.9] - 2026-06-12</h2>
+<h3 id="changed_1">Changed</h3>
+<ul>
+<li>README logo URLs made absolute for correct rendering on PyPI.</li>
+</ul>
+<h2 id="018-2026-06-12">[0.1.8] - 2026-06-12</h2>
+<h3 id="changed_2">Changed</h3>
+<ul>
+<li>Added PyPinergy branding, logos, and custom MkDocs theme styling.</li>
+<li>Enabled Mermaid diagram support in MkDocs.</li>
+<li>Added lazy auth flow diagram and contributing guide to documentation.</li>
+</ul>
 <h2 id="017-2026-06-11">[0.1.7] - 2026-06-11</h2>
 <h3 id="fixed">Fixed</h3>
 <ul>
 <li>Raise <code>PinergyAuthError</code> for token rejection reported as <code>success:false</code> with HTTP 200. Stale tokens are now dropped automatically.</li>
 </ul>
 <h2 id="016-2026-06-11">[0.1.6] - 2026-06-11</h2>
-<h3 id="added">Added</h3>
+<h3 id="added_1">Added</h3>
 <ul>
 <li>Context manager support for <code>PinergyClient</code>.</li>
 <li><code>PinergyTimeoutError</code> and <code>PinergyResponseError</code> exceptions.</li>
 <li><code>*_dt</code> alias fields in models for better naming consistency.</li>
 <li>Automatic token self-healing on 401 errors.</li>
 </ul>
-<h3 id="changed">Changed</h3>
+<h3 id="changed_3">Changed</h3>
 <ul>
 <li>Improved model parsing robustness.</li>
 <li>Hardened client lifecycle management.</li>
 </ul>
 <h2 id="010-2026-06-01">[0.1.0] - 2026-06-01</h2>
-<h3 id="added_1">Added</h3>
+<h3 id="added_2">Added</h3>
 <ul>
 <li>Initial release with support for usage, balance, top-ups, and comparison.</li>
 </ul>

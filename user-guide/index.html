@@ -594,6 +594,67 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#token-expiry-in-long-running-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token expiry in long-running applications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pinergyautherror-after-logout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PinergyAuthError after logout()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sha-1-password-hashing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SHA-1 password hashing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polling-frequency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Polling frequency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -986,6 +1047,67 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#token-expiry-in-long-running-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token expiry in long-running applications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pinergyautherror-after-logout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PinergyAuthError after logout()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sha-1-password-hashing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SHA-1 password hashing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polling-frequency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Polling frequency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1150,6 +1272,29 @@
 <p>If you need to route requests through a proxy or a local mock server, override the <code>base_url</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">client</span> <span class="o">=</span> <span class="n">PinergyClient</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;http://localhost:8080&quot;</span><span class="p">)</span>
 </code></pre></div>
+<hr />
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="token-expiry-in-long-running-applications">Token expiry in long-running applications</h3>
+<p>The client automatically re-authenticates when the API rejects a stale token (HTTP 401 or
+a <code>success: false</code> auth error). You do not need to handle token refresh manually — just
+catch <code>PinergyAuthError</code> to distinguish a genuine credential failure from a transient
+network issue.</p>
+<h3 id="pinergyautherror-after-logout"><code>PinergyAuthError</code> after <code>logout()</code></h3>
+<p>After <code>logout()</code>, the client intentionally disables itself: both the auth token and the
+password hash are cleared. Any subsequent API call will raise <code>PinergyAuthError</code>
+immediately without attempting the network. This is by design — it prevents accidental
+re-authentication after an explicit sign-out. Create a new <code>PinergyClient</code> instance if
+you need to start a fresh session.</p>
+<h3 id="sha-1-password-hashing">SHA-1 password hashing</h3>
+<p>The Pinergy mobile API requires passwords to be sent as a SHA-1 hex digest. pypinergy
+implements this to match the upstream specification; there is no alternative. Your
+password is hashed once in memory and never stored or logged. After <code>login()</code> succeeds,
+the password hash is discarded.</p>
+<h3 id="polling-frequency">Polling frequency</h3>
+<p>Pinergy meters report readings periodically (typically hourly). Polling more frequently
+than every 5–10 minutes is unlikely to return new data and may increase the risk of
+rate-limiting by the upstream API. The <code>balance.last_reading</code> timestamp indicates when
+the most recent meter reading was received.</p>
 
 
 
