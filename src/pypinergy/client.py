@@ -166,9 +166,9 @@ class PinergyClient:
             req_headers = dict(headers) if headers else {}
             if authenticated:
                 self._ensure_auth()
-                req_headers["auth_token"] = self._auth_token or ""
-
             token_used = self._auth_token
+            if authenticated:
+                req_headers["auth_token"] = token_used or ""
 
             try:
                 response = self._session.request(
