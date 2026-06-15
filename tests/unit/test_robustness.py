@@ -381,6 +381,28 @@ def test_level_pay_tolerates_null_usage_data():
     assert lp.labels == [] and lp.flags == [] and lp.values == []
 
 
+def test_level_pay_tolerates_corrupted_payloads():
+    # usageData is dict but daily is None
+    lp1 = LevelPayUsageResponse._from_dict({"usageData": {"daily": None}})
+    assert lp1.labels == [] and lp1.flags == [] and lp1.values == []
+
+    # daily has null labels/flags/values or values containing None
+    lp2 = LevelPayUsageResponse._from_dict({
+        "usageData": {
+            "daily": {
+                "labels": [None, "00:30"],
+                "flags": [None, "Standard"],
+                "values": [None, {"label": "14/03", "daykWh": None}]
+            }
+        }
+    })
+    assert lp2.labels == ["", "00:30"]
+    assert lp2.flags == ["", "Standard"]
+    assert len(lp2.values) == 1
+    assert lp2.values[0].label == "14/03"
+    assert lp2.values[0].day_kwh == {}
+
+
 def test_balance_response_tolerates_nulls():
     br = BalanceResponse._from_dict({"balance": None, "top_up_in_days": None})
     assert br.credit_balance == 0.0
