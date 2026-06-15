@@ -268,6 +268,8 @@ class PinergyClient:
         Returns:
             True if the address is registered.
         """
+        if "\r" in email or "\n" in email:
+            raise ValueError("Email address cannot contain carriage return or line feed characters")
         data = self._request(
             "GET",
             "/api/checkemail",
