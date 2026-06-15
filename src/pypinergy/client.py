@@ -446,6 +446,11 @@ class PinergyClient:
             :class:`~pypinergy.models.TopUpResponse` with the updated balance
             and transaction details.
         """
+        if amount <= 0:
+            raise ValueError("Top-up amount must be positive.")
+        if not cc_token:
+            raise ValueError("cc_token must be a non-empty string.")
+
         payload = {
             "amount": amount,
             "cc_token": cc_token,

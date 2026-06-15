@@ -648,3 +648,15 @@ def test_top_up_api_error():
         _make_client().top_up(amount=50.0, cc_token="bad-token")
     assert exc_info.value.message == "Invalid card token"
     assert exc_info.value.error_code == 400
+
+
+def test_top_up_rejects_non_positive_amount():
+    with pytest.raises(ValueError, match="positive"):
+        _make_client().top_up(amount=0.0, cc_token="cc-token-xyz")
+    with pytest.raises(ValueError, match="positive"):
+        _make_client().top_up(amount=-5.0, cc_token="cc-token-xyz")
+
+
+def test_top_up_rejects_empty_cc_token():
+    with pytest.raises(ValueError, match="non-empty"):
+        _make_client().top_up(amount=20.0, cc_token="")

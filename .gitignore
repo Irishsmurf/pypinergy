@@ -10,3 +10,7 @@ build/
 htmlcov/
 .pytest_cache/
 site/
+coverage.xml
+coverage_prompt.txt
+coverage_report.txt
+junit.xml
