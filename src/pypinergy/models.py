@@ -287,9 +287,13 @@ class LevelPayDailyValue:
     @classmethod
     def _from_dict(cls, d: Mapping[str, Any]) -> "LevelPayDailyValue":
         d = _as_dict(d)
+        day_kwh_raw = d.get("daykWh")
+        day_kwh = {}
+        if isinstance(day_kwh_raw, dict):
+            day_kwh = {_to_str(k): _to_float(v) for k, v in day_kwh_raw.items() if k is not None}
         return cls(
             label=_to_str(d.get("label")),
-            day_kwh={k: _to_float(v) for k, v in _as_dict(d.get("daykWh")).items()},
+            day_kwh=day_kwh,
         )
 
 
@@ -303,14 +307,16 @@ class LevelPayUsageResponse:
 
     @classmethod
     def _from_dict(cls, d: Mapping[str, Any]) -> "LevelPayUsageResponse":
-        daily = _as_dict(_as_dict(_as_dict(d).get("usageData")).get("daily"))
+        d = _as_dict(d)
+        usage_data = _as_dict(d.get("usageData"))
+        daily = _as_dict(usage_data.get("daily"))
         # Performance optimization: List comprehension with locally cached
         # classmethod reference speeds up the array parsing loop by ~10% over list(map(...))
         _lp_from_dict = LevelPayDailyValue._from_dict
         return cls(
-            labels=_as_list(daily.get("labels")),
-            flags=_as_list(daily.get("flags")),
-            values=[_lp_from_dict(x) for x in _as_list(daily.get("values"))],
+            labels=[_to_str(x) for x in _as_list(daily.get("labels"))],
+            flags=[_to_str(x) for x in _as_list(daily.get("flags"))],
+            values=[_lp_from_dict(x) for x in _as_list(daily.get("values")) if x is not None],
         )
 
 
