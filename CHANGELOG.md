@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-15
+
 ### Added
 - Pre-commit configuration with Ruff (formatting, linting) and MyPy (strict typing) hooks (#186).
 - Automated API schema documentation generator script to introspect dataclasses (#187).
