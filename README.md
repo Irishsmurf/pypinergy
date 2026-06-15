@@ -262,6 +262,9 @@ notif = client.get_notification_preferences()
 print(f"Email notifications: {notif.email}")
 print(f"SMS notifications:   {notif.sms}")
 print(f"Phone notifications: {notif.phone}")
+
+# Update notification preferences
+client.update_notification_preferences(sms=True, email=True, phone=False)
 ```
 
 ---
