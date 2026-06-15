@@ -290,7 +290,7 @@ class LevelPayDailyValue:
         day_kwh_raw = d.get("daykWh")
         day_kwh = {}
         if isinstance(day_kwh_raw, dict):
-            day_kwh = {k: _to_float(v) for k, v in day_kwh_raw.items() if k is not None}
+            day_kwh = {_to_str(k): _to_float(v) for k, v in day_kwh_raw.items() if k is not None}
         return cls(
             label=_to_str(d.get("label")),
             day_kwh=day_kwh,
