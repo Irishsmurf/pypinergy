@@ -212,6 +212,7 @@ class PinergyClient:
                         raise PinergyAuthError(message or "Auth token rejected")
                 _raise_for_api_error(data)
             return data
+        assert False, "unreachable"
 
     def _get(self, path: str) -> Dict[str, Any]:
         """Perform an authenticated GET and return the parsed JSON body."""

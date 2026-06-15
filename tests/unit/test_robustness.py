@@ -248,6 +248,8 @@ def test_concurrent_self_healing_reauth(monkeypatch):
     for t in threads:
         t.join()
 
+    if errors:
+        raise errors[0]
     assert len(errors) == 0
     assert len(results) == 5
     assert len(login_calls) == 1
@@ -317,6 +319,8 @@ def test_concurrent_self_healing_reauth_api_payload(monkeypatch):
     for t in threads:
         t.join()
 
+    if errors:
+        raise errors[0]
     assert len(errors) == 0
     assert len(results) == 5
     assert len(login_calls) == 1
