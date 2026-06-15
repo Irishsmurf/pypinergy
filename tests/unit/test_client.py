@@ -254,9 +254,7 @@ def test_get_usage_sends_auth_token():
 @rsps_lib.activate
 def test_get_level_pay_usage():
     _add_login(rsps_lib)
-    rsps_lib.add(
-        rsps_lib.GET, f"{BASE}/api/levelpayusage/", json=LEVEL_PAY_PAYLOAD, status=200
-    )
+    rsps_lib.add(rsps_lib.GET, f"{BASE}/api/levelpayusage/", json=LEVEL_PAY_PAYLOAD, status=200)
     result = _make_client().get_level_pay_usage()
     assert isinstance(result, LevelPayUsageResponse)
     assert result.labels == ["00:00", "00:30", "01:00"]
@@ -318,9 +316,7 @@ def test_compare_usage():
 @rsps_lib.activate
 def test_get_config_info():
     _add_login(rsps_lib)
-    rsps_lib.add(
-        rsps_lib.GET, f"{BASE}/api/configinfo/", json=CONFIG_PAYLOAD, status=200
-    )
+    rsps_lib.add(rsps_lib.GET, f"{BASE}/api/configinfo/", json=CONFIG_PAYLOAD, status=200)
     result = _make_client().get_config_info()
     assert isinstance(result, ConfigInfoResponse)
     assert result.thresholds == [5]
@@ -334,9 +330,7 @@ def test_get_config_info():
 @rsps_lib.activate
 def test_get_defaults_info():
     _add_login(rsps_lib)
-    rsps_lib.add(
-        rsps_lib.GET, f"{BASE}/api/defaultsinfo/", json=DEFAULTS_PAYLOAD, status=200
-    )
+    rsps_lib.add(rsps_lib.GET, f"{BASE}/api/defaultsinfo/", json=DEFAULTS_PAYLOAD, status=200)
     result = _make_client().get_defaults_info()
     assert isinstance(result, DefaultsInfoResponse)
     assert len(result.house_types) == 3
@@ -384,9 +378,7 @@ def test_update_device_token_sends_payload():
         json={"success": True},
         status=200,
     )
-    _make_client().update_device_token(
-        "my-token", device_type="android", os_version="13"
-    )
+    _make_client().update_device_token("my-token", device_type="android", os_version="13")
 
     import json
 

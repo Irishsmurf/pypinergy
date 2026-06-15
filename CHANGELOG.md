@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Pre-commit configuration with Ruff (formatting, linting) and MyPy (strict typing) hooks (#186).
+
 ### Fixed
 - Prevent CRLF HTTP Header Injection in check_email (#188).
 - Prevent multiple redundant login calls and race conditions on concurrent token rejection (#184).
