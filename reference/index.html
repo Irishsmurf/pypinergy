@@ -4216,9 +4216,7 @@ transparently after explicit logout. Subsequent API calls raise
 <span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PinergyAPIError</span><span class="p">(</span><span class="n">PinergyError</span><span class="p">):</span>
+<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PinergyAPIError</span><span class="p">(</span><span class="n">PinergyError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when the API returns a non-success response.</span>
 
 <span class="sd">    Attributes:</span>
@@ -4232,9 +4230,7 @@ transparently after explicit logout. Subsequent API calls raise
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;PinergyAPIError(message=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="si">!r}</span><span class="s2">, error_code=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">error_code</span><span class="si">}</span><span class="s2">)&quot;</span>
-        <span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;PinergyAPIError(message=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="si">!r}</span><span class="s2">, error_code=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">error_code</span><span class="si">}</span><span class="s2">)&quot;</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -4313,8 +4309,8 @@ transparently after explicit logout. Subsequent API calls raise
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/pypinergy/exceptions.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">31</span>
-<span class="normal">32</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PinergyHTTPError</span><span class="p">(</span><span class="n">PinergyError</span><span class="p">):</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PinergyHTTPError</span><span class="p">(</span><span class="n">PinergyError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when an unexpected HTTP-level error occurs (e.g. 5xx, timeout).&quot;&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -4347,12 +4343,12 @@ handlers continue to catch timeouts exactly as before.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/pypinergy/exceptions.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">35</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
 <span class="normal">36</span>
 <span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PinergyTimeoutError</span><span class="p">(</span><span class="n">PinergyHTTPError</span><span class="p">):</span>
+<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PinergyTimeoutError</span><span class="p">(</span><span class="n">PinergyHTTPError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when a request exceeds the configured timeout.</span>
 
 <span class="sd">    Subclasses :class:`PinergyHTTPError`, so existing ``except PinergyHTTPError``</span>
@@ -4392,16 +4388,16 @@ raw JSON decoding error (a <code>ValueError</code> subclass) keep working.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/pypinergy/exceptions.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
 <span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
 <span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PinergyResponseError</span><span class="p">(</span><span class="n">PinergyError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+<span class="normal">50</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PinergyResponseError</span><span class="p">(</span><span class="n">PinergyError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when the API returns a payload that cannot be interpreted.</span>
 
 <span class="sd">    Covers malformed JSON bodies, non-object top-level JSON, and successful</span>
