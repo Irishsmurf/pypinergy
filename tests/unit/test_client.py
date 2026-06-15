@@ -215,6 +215,13 @@ def test_check_email_sends_header():
     assert rsps_lib.calls[0].request.headers["email_address"] == "test@example.com"
 
 
+def test_check_email_crlf_injection():
+    client = _make_client()
+    with pytest.raises(ValueError) as exc_info:
+        client.check_email("user@example.com\r\ninjected-header: value")
+    assert "carriage return or line feed" in str(exc_info.value)
+
+
 # ---------------------------------------------------------------------------
 # get_usage
 # ---------------------------------------------------------------------------
