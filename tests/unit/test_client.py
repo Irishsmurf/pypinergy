@@ -352,6 +352,48 @@ def test_get_notification_preferences():
 
 
 # ---------------------------------------------------------------------------
+# update_notification_preferences
+# ---------------------------------------------------------------------------
+
+
+@rsps_lib.activate
+def test_update_notification_preferences():
+    _add_login(rsps_lib)
+    rsps_lib.add(
+        rsps_lib.POST,
+        f"{BASE}/api/setnotif/",
+        json={"success": True},
+        status=200,
+    )
+    result = _make_client().update_notification_preferences(sms=True, email=False, phone=True)
+    assert result is True
+
+    import json
+
+    body = json.loads(rsps_lib.calls[1].request.body)
+    assert body["sms"] is True
+    assert body["email"] is False
+    assert body["phone"] is True
+
+
+@rsps_lib.activate
+def test_update_notification_preferences_failure():
+    _add_login(rsps_lib)
+    rsps_lib.add(
+        rsps_lib.POST,
+        f"{BASE}/api/setnotif/",
+        json={"success": False, "message": "Notification update failed", "error_code": 99},
+        status=200,
+    )
+    from pypinergy.exceptions import PinergyAPIError
+
+    with pytest.raises(PinergyAPIError) as exc_info:
+        _make_client().update_notification_preferences(sms=True, email=False, phone=True)
+    assert exc_info.value.message == "Notification update failed"
+    assert exc_info.value.error_code == 99
+
+
+# ---------------------------------------------------------------------------
 # update_device_token
 # ---------------------------------------------------------------------------
 

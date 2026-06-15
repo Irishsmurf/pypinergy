@@ -403,6 +403,30 @@ class PinergyClient:
         """
         return NotificationPreferences._from_dict(self._get("/api/getnotif/"))
 
+    def update_notification_preferences(
+        self,
+        sms: bool,
+        email: bool,
+        phone: bool,
+    ) -> bool:
+        """Update the account's notification channel preferences.
+
+        Args:
+            sms: Enable or disable SMS notifications.
+            email: Enable or disable email notifications.
+            phone: Enable or disable phone notifications.
+
+        Returns:
+            True on success.
+        """
+        payload = {
+            "sms": sms,
+            "email": email,
+            "phone": phone,
+        }
+        data = self._request("POST", "/api/setnotif/", json=payload, authenticated=True)
+        return bool(data.get("success"))
+
     # ------------------------------------------------------------------
     # Device
     # ------------------------------------------------------------------
