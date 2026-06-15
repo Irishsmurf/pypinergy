@@ -29,10 +29,15 @@ jobs:
         run: python -m pip install -e ".[dev]"
 
       - name: Run linting (Ruff)
-        run: ruff check src tests
+        run: ruff check src tests scripts
 
       - name: Run type checking (Mypy)
         run: mypy src
+
+      - name: Verify API schema documentation is up-to-date
+        run: |
+          python scripts/generate_schema_docs.py --output docs/api_schemas.md
+          git diff --exit-code docs/api_schemas.md
 
       - name: Run unit tests
         run: python -m pytest tests/unit/ -v --cov=pypinergy

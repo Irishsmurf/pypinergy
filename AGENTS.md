@@ -101,6 +101,17 @@ pytest --cov=pypinergy --cov-report=html
 2. Add a response model (dataclass + `_from_dict`) to [src/pypinergy/models.py](src/pypinergy/models.py).
 3. Export the new model from [src/pypinergy/__init__.py](src/pypinergy/__init__.py).
 4. Add a mock payload to `tests/conftest.py` and cover it in `tests/unit/test_client.py`.
+5. Regenerate the API schema documentation by running `python scripts/generate_schema_docs.py --output docs/api_schemas.md`.
+
+### Regenerating API Schema Docs
+
+To automatically update the markdown reference tables for all response structures, run:
+
+```bash
+python scripts/generate_schema_docs.py --output docs/api_schemas.md
+```
+
+This introspects the dataclasses in `src/pypinergy/models.py` and updates the schema documentation.
 
 ### Bumping the version
 
