@@ -370,10 +370,11 @@ else:
 
 ## Running Tests
 
-### Unit tests (no credentials required)
+### Development Setup & Unit tests (no credentials required)
 
 ```bash
 pip install -e ".[dev]"
+pre-commit install
 pytest tests/unit/ -v
 ```
 

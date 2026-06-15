@@ -377,9 +377,7 @@ def test_sensitive_fields_not_in_repr():
     assert "mobile_number=" not in user_repr
     assert "pinergy_id=" in user_repr
 
-    cc = CreditCard(
-        cc_token="secret_stripe_token_5678", name="Visa", last_4_digits="4242"
-    )
+    cc = CreditCard(cc_token="secret_stripe_token_5678", name="Visa", last_4_digits="4242")
     cc_repr = repr(cc)
     assert "secret_stripe_token_5678" not in cc_repr
     assert "cc_token=" not in cc_repr
@@ -395,9 +393,7 @@ def test_sensitive_fields_not_in_repr():
         premises_number="123",
         account_type="prepay",
         user=user,
-        house=House(
-            type=0, heating_type=0, bedroom_count=0, adult_count=0, children_count=0
-        ),
+        house=House(type=0, heating_type=0, bedroom_count=0, adult_count=0, children_count=0),
         credit_cards=[],
     )
     lr_repr = repr(lr)

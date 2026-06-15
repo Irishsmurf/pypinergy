@@ -192,22 +192,26 @@ def test_concurrent_self_healing_reauth(monkeypatch):
 
     lock = threading.Lock()
     login_calls = []
+
     def fake_login():
         with lock:
             login_calls.append(1)
         time.sleep(0.05)  # widen the race window
         client._auth_token = "new_token"
-        return LoginResponse._from_dict({
-            "success": True,
-            "auth_token": "new_token",
-            "user": None,
-            "house": None,
-            "credit_cards": None
-        })
+        return LoginResponse._from_dict(
+            {
+                "success": True,
+                "auth_token": "new_token",
+                "user": None,
+                "house": None,
+                "credit_cards": None,
+            }
+        )
 
     monkeypatch.setattr(client, "login", fake_login)
 
     request_calls = []
+
     def fake_request(method, url, *args, **kwargs):
         headers = kwargs.get("headers", {})
         token = headers.get("auth_token")
@@ -219,7 +223,9 @@ def test_concurrent_self_healing_reauth(monkeypatch):
 
         if token == "stale_token":
             resp.status_code = 401
-            raise requests.exceptions.HTTPError("401 Client Error: Unauthorized for url", response=resp)
+            raise requests.exceptions.HTTPError(
+                "401 Client Error: Unauthorized for url", response=resp
+            )
         elif token == "new_token":
             resp.status_code = 200
             resp._content = b'{"success": true, "balance": 10.0}'
@@ -263,22 +269,26 @@ def test_concurrent_self_healing_reauth_api_payload(monkeypatch):
 
     lock = threading.Lock()
     login_calls = []
+
     def fake_login():
         with lock:
             login_calls.append(1)
         time.sleep(0.05)  # widen the race window
         client._auth_token = "new_token"
-        return LoginResponse._from_dict({
-            "success": True,
-            "auth_token": "new_token",
-            "user": None,
-            "house": None,
-            "credit_cards": None
-        })
+        return LoginResponse._from_dict(
+            {
+                "success": True,
+                "auth_token": "new_token",
+                "user": None,
+                "house": None,
+                "credit_cards": None,
+            }
+        )
 
     monkeypatch.setattr(client, "login", fake_login)
 
     request_calls = []
+
     def fake_request(method, url, *args, **kwargs):
         headers = kwargs.get("headers", {})
         token = headers.get("auth_token")
@@ -387,15 +397,17 @@ def test_level_pay_tolerates_corrupted_payloads():
     assert lp1.labels == [] and lp1.flags == [] and lp1.values == []
 
     # daily has null labels/flags/values or values containing None
-    lp2 = LevelPayUsageResponse._from_dict({
-        "usageData": {
-            "daily": {
-                "labels": [None, "00:30"],
-                "flags": [None, "Standard"],
-                "values": [None, {"label": "14/03", "daykWh": None}]
+    lp2 = LevelPayUsageResponse._from_dict(
+        {
+            "usageData": {
+                "daily": {
+                    "labels": [None, "00:30"],
+                    "flags": [None, "Standard"],
+                    "values": [None, {"label": "14/03", "daykWh": None}],
+                }
             }
         }
-    })
+    )
     assert lp2.labels == ["", "00:30"]
     assert lp2.flags == ["", "Standard"]
     assert len(lp2.values) == 1

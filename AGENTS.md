@@ -34,9 +34,10 @@ examples/             # Runnable usage scripts
 
 ```bash
 pip install -e ".[dev]"
+pre-commit install
 ```
 
-This installs the package in editable mode along with `pytest`, `pytest-cov`, and `responses` (HTTP mocking).
+This installs the package in editable mode along with `pytest`, `pytest-cov`, and `responses` (HTTP mocking), and registers the pre-commit hooks locally.
 
 ## Testing
 
