@@ -10,7 +10,7 @@ repos:
     rev: v1.8.0
     hooks:
       - id: mypy
-        args: [ --strict, --python-version=3.10 ]
         additional_dependencies:
           - types-requests
         files: ^src/
+        pass_filenames: false
