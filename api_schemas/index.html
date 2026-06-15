@@ -623,6 +623,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#topupresponse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TopUpResponse
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#usageentry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -696,6 +707,7 @@ It documents all API response dataclasses defined in <code>src/pypinergy/models.
 <li><a href="#loginresponse">LoginResponse</a></li>
 <li><a href="#notificationpreferences">NotificationPreferences</a></li>
 <li><a href="#scheduledtopup">ScheduledTopUp</a></li>
+<li><a href="#topupresponse">TopUpResponse</a></li>
 <li><a href="#usageentry">UsageEntry</a></li>
 <li><a href="#usageresponse">UsageResponse</a></li>
 <li><a href="#user">User</a></li>
@@ -1279,6 +1291,35 @@ It documents all API response dataclasses defined in <code>src/pypinergy/models.
 <td style="text-align: left;"><code>customer</code></td>
 <td style="text-align: left;"><code>str</code></td>
 <td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="topupresponse">TopUpResponse</h2>
+<p>Result of an instant top-up transaction.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Field Name</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>new_balance</code></td>
+<td style="text-align: left;"><code>float</code></td>
+<td style="text-align: left;">Account balance after the top-up (€).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>amount</code></td>
+<td style="text-align: left;"><code>float</code></td>
+<td style="text-align: left;">Amount added to the account (€).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>transaction_id</code></td>
+<td style="text-align: left;"><code>str</code></td>
+<td style="text-align: left;">Unique identifier for the top-up transaction.</td>
 </tr>
 </tbody>
 </table>
