@@ -26,6 +26,7 @@ from .models import (
     LevelPayUsageResponse,
     LoginResponse,
     NotificationPreferences,
+    TopUpResponse,
     UsageResponse,
 )
 
@@ -426,6 +427,31 @@ class PinergyClient:
         }
         data = self._request("POST", "/api/setnotif/", json=payload, authenticated=True)
         return bool(data.get("success"))
+
+    # ------------------------------------------------------------------
+    # Top-Up
+    # ------------------------------------------------------------------
+
+    def top_up(self, amount: float, cc_token: str) -> TopUpResponse:
+        """Initiate an instant top-up using a saved payment card.
+
+        Args:
+            amount: The amount to top up (€). Must be a positive value from the
+                list of valid top-up amounts returned by :meth:`get_config_info`.
+            cc_token: The tokenised credit card identifier. Use
+                :attr:`~pypinergy.models.CreditCard.cc_token` from the login
+                response.
+
+        Returns:
+            :class:`~pypinergy.models.TopUpResponse` with the updated balance
+            and transaction details.
+        """
+        payload = {
+            "amount": amount,
+            "cc_token": cc_token,
+        }
+        data = self._request("POST", "/api/instanttopup/", json=payload, authenticated=True)
+        return TopUpResponse._from_dict(data)
 
     # ------------------------------------------------------------------
     # Device

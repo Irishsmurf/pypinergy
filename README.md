@@ -255,6 +255,30 @@ for ht in defaults.heating_types:
 
 ---
 
+## Instant Top-Up
+
+Use `top_up()` to charge a saved payment card and add credit to your Pinergy account.
+The `cc_token` is available on the `CreditCard` object returned during login.
+Valid top-up amounts can be retrieved via `get_config_info()`.
+
+```python
+# Retrieve the CC token from the login response
+login_resp = client.login()
+cc_token = login_resp.credit_cards[0].cc_token
+
+# Check valid top-up amounts
+config = client.get_config_info()
+print(f"Valid amounts: {config.topup_amounts}")
+
+# Trigger a top-up
+result = client.top_up(amount=20.0, cc_token=cc_token)
+print(f"Transaction ID: {result.transaction_id}")
+print(f"New balance:    €{result.new_balance:.2f}")
+print(f"Amount added:   €{result.amount:.2f}")
+```
+
+---
+
 ## Notifications
 
 ```python

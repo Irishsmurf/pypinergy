@@ -1,0 +1,15 @@
+Act as a senior software engineer. I need you to write unit tests to increase code coverage for the provided source code, based on the missing lines identified by CodeCov.
+
+**Context Provided:**
+1. The original source code file.
+2. The CodeCov report or the specific line numbers currently missing coverage.
+3. (If applicable) Existing unit tests for this file to establish the testing pattern.
+
+**Your Task:**
+Write the missing unit tests to cover the unexecuted lines, branches, and edge cases. 
+
+**Strict Constraints:**
+* **Focus on the gaps:** Only write tests for the missing coverage areas. Do not rewrite existing tests unless absolutely necessary to inject a mock or fixture.
+* **Edge Cases:** Ensure you test failure states, empty inputs, timeouts, and boundary conditions, not just the happy path. 
+* **No Hallucinations:** Do not invent mock data or helper functions that require external libraries not already imported, unless strictly native to the language's standard testing suite.
+* **Output:** Return ONLY the newly required test code and any necessary imports. Do not include explanations or markdown wrappers unless requested.

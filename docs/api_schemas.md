@@ -20,6 +20,7 @@ It documents all API response dataclasses defined in `src/pypinergy/models.py`.
 - [LoginResponse](#loginresponse)
 - [NotificationPreferences](#notificationpreferences)
 - [ScheduledTopUp](#scheduledtopup)
+- [TopUpResponse](#topupresponse)
 - [UsageEntry](#usageentry)
 - [UsageResponse](#usageresponse)
 - [User](#user)
@@ -219,6 +220,17 @@ A top-up scheduled for a fixed calendar day.
 | `top_up_amount` | `float` |  |
 | `top_up_day` | `int` |  |
 | `customer` | `str` |  |
+
+---
+
+## TopUpResponse
+Result of an instant top-up transaction.
+
+| Field Name | Type | Description |
+| :--- | :--- | :--- |
+| `new_balance` | `float` | Account balance after the top-up (€). |
+| `amount` | `float` | Amount added to the account (€). |
+| `transaction_id` | `str` | Unique identifier for the top-up transaction. |
 
 ---
 

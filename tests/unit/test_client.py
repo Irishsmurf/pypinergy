@@ -15,6 +15,7 @@ from pypinergy.models import (
     LevelPayUsageResponse,
     LoginResponse,
     NotificationPreferences,
+    TopUpResponse,
     UsageResponse,
 )
 from tests.conftest import (
@@ -26,6 +27,7 @@ from tests.conftest import (
     LEVEL_PAY_PAYLOAD,
     LOGIN_PAYLOAD,
     NOTIF_PAYLOAD,
+    TOP_UP_PAYLOAD,
     USAGE_PAYLOAD,
 )
 
@@ -604,3 +606,45 @@ def test_get_raises_http_error_on_timeout():
     )
     with pytest.raises(PinergyHTTPError, match="Read timed out"):
         _make_client().get_balance()
+
+
+# ---------------------------------------------------------------------------
+# top_up
+# ---------------------------------------------------------------------------
+
+
+@rsps_lib.activate
+def test_top_up():
+    _add_login(rsps_lib)
+    rsps_lib.add(
+        rsps_lib.POST,
+        f"{BASE}/api/instanttopup/",
+        json=TOP_UP_PAYLOAD,
+        status=200,
+    )
+    result = _make_client().top_up(amount=50.0, cc_token="cc-token-xyz")
+    assert isinstance(result, TopUpResponse)
+    assert result.amount == 50.0
+    assert result.new_balance == 65.50
+    assert result.transaction_id == "txn-abc123"
+
+    import json
+
+    body = json.loads(rsps_lib.calls[1].request.body)
+    assert body["amount"] == 50.0
+    assert body["cc_token"] == "cc-token-xyz"
+
+
+@rsps_lib.activate
+def test_top_up_api_error():
+    _add_login(rsps_lib)
+    rsps_lib.add(
+        rsps_lib.POST,
+        f"{BASE}/api/instanttopup/",
+        json={"success": False, "message": "Invalid card token", "error_code": 400},
+        status=200,
+    )
+    with pytest.raises(PinergyAPIError) as exc_info:
+        _make_client().top_up(amount=50.0, cc_token="bad-token")
+    assert exc_info.value.message == "Invalid card token"
+    assert exc_info.value.error_code == 400
