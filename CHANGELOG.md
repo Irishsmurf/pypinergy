@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pre-commit configuration with Ruff (formatting, linting) and MyPy (strict typing) hooks (#186).
 - Automated API schema documentation generator script to introspect dataclasses (#187).
 - Support updating notification preferences via client method (#183).
+- `top_up(amount, cc_token)` method to initiate instant top-ups via a saved payment card (#182).
 
 ### Fixed
 - Prevent CRLF HTTP Header Injection in check_email (#188).

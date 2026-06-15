@@ -593,3 +593,29 @@ class NotificationPreferences:
             should_show=_to_int(d.get("should_show")),
             should_show_message=_to_str(d.get("should_show_message")),
         )
+
+
+# ---------------------------------------------------------------------------
+# Top-Up
+# ---------------------------------------------------------------------------
+
+
+@dataclass(**_DATACLASS_KWARGS)
+class TopUpResponse:
+    """Result of an instant top-up transaction."""
+
+    new_balance: float
+    """Account balance after the top-up (€)."""
+    amount: float
+    """Amount added to the account (€)."""
+    transaction_id: str
+    """Unique identifier for the top-up transaction."""
+
+    @classmethod
+    def _from_dict(cls, d: Mapping[str, Any]) -> "TopUpResponse":
+        d = _as_dict(d)
+        return cls(
+            new_balance=_to_float(d.get("new_balance")),
+            amount=_to_float(d.get("amount")),
+            transaction_id=_to_str(d.get("transaction_id")),
+        )

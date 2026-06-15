@@ -178,3 +178,10 @@ LEVEL_PAY_PAYLOAD = {
         }
     }
 }
+
+TOP_UP_PAYLOAD = {
+    "success": True,
+    "new_balance": 65.50,
+    "amount": 50.0,
+    "transaction_id": "txn-abc123",
+}
