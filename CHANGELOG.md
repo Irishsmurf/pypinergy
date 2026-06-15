@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Prevent CRLF HTTP Header Injection in check_email (#188).
+- Prevent multiple redundant login calls and race conditions on concurrent token rejection (#184).
 
 ## [1.0.0] - 2026-06-13
 
