@@ -13,8 +13,7 @@ from typing import Any, Dict, List
 
 def generate_markdown(models_file_path: str) -> str:
     if not os.path.exists(models_file_path):
-        print(f"Error: {models_file_path} not found.", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(f"Models file not found: {models_file_path}")
 
     with open(models_file_path, "r", encoding="utf-8") as f:
         tree = ast.parse(f.read())
@@ -24,16 +23,37 @@ def generate_markdown(models_file_path: str) -> str:
         if not isinstance(node, ast.ClassDef):
             continue
 
-        # Check if it's a dataclass
+        # Check if it's a dataclass (e.g. @dataclass, @dataclasses.dataclass, or called versions)
         is_dc = False
         for dec in node.decorator_list:
+            # Matches @dataclass
             if isinstance(dec, ast.Name) and dec.id == "dataclass":
                 is_dc = True
                 break
+            # Matches @dataclasses.dataclass
+            elif (
+                isinstance(dec, ast.Attribute)
+                and isinstance(dec.value, ast.Name)
+                and dec.value.id == "dataclasses"
+                and dec.attr == "dataclass"
+            ):
+                is_dc = True
+                break
+            # Matches @dataclass(...)
             elif (
                 isinstance(dec, ast.Call)
                 and isinstance(dec.func, ast.Name)
                 and dec.func.id == "dataclass"
+            ):
+                is_dc = True
+                break
+            # Matches @dataclasses.dataclass(...)
+            elif (
+                isinstance(dec, ast.Call)
+                and isinstance(dec.func, ast.Attribute)
+                and isinstance(dec.func.value, ast.Name)
+                and dec.func.value.id == "dataclasses"
+                and dec.func.attr == "dataclass"
             ):
                 is_dc = True
                 break
@@ -69,6 +89,9 @@ def generate_markdown(models_file_path: str) -> str:
 
         classes.append({"name": class_name, "docstring": class_doc, "fields": fields})
 
+    if not classes:
+        raise ValueError(f"No dataclasses detected in models file: {models_file_path}")
+
     # Sort classes by name for consistency
     classes.sort(key=lambda c: str(c["name"]))
 
@@ -101,9 +124,10 @@ def generate_markdown(models_file_path: str) -> str:
             md.append("| *No fields* | | |")
         else:
             for f_name, f_type, f_doc in cls["fields"]:
-                # Escape pipe characters in type string if any
+                # Escape pipe characters in type and description strings
                 f_type_clean = f_type.replace("|", "\\|")
-                md.append(f"| `{f_name}` | `{f_type_clean}` | {f_doc} |")
+                f_doc_clean = f_doc.replace("|", "\\|")
+                md.append(f"| `{f_name}` | `{f_type_clean}` | {f_doc_clean} |")
         md.append("")
         md.append("---")
         md.append("")
@@ -114,20 +138,34 @@ def generate_markdown(models_file_path: str) -> str:
 def main() -> None:
     import argparse
 
+    # Default path is relative to the directory containing this script file
+    default_models_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "src", "pypinergy", "models.py")
+    )
+
     parser = argparse.ArgumentParser(description="Generate API schema markdown documentation.")
     parser.add_argument(
         "--models-path",
-        default="src/pypinergy/models.py",
-        help="Path to models.py file (default: src/pypinergy/models.py)",
+        default=default_models_path,
+        help=f"Path to models.py file (default: {default_models_path})",
     )
     parser.add_argument(
         "--output", help="Path to save the generated markdown (prints to stdout if not specified)"
     )
     args = parser.parse_args()
 
-    markdown_content = generate_markdown(args.models_path)
+    try:
+        markdown_content = generate_markdown(args.models_path)
+    except (FileNotFoundError, ValueError) as err:
+        print(f"Error: {err}", file=sys.stderr)
+        sys.exit(1)
 
     if args.output:
+        # Create output directories if they do not exist
+        output_dir = os.path.dirname(os.path.abspath(args.output))
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(markdown_content)
         print(f"Successfully generated schema documentation at {args.output}")
