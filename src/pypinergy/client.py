@@ -160,43 +160,58 @@ class PinergyClient:
         - other application-level ``success: false`` → :class:`PinergyAPIError`
           (unless *check_api_error* is False)
         """
-        if authenticated:
-            self._ensure_auth()
-            headers = dict(headers) if headers else {}
-            headers["auth_token"] = self._auth_token or ""
-        try:
-            response = self._session.request(
-                method,
-                self._url(path),
-                json=json,
-                headers=headers,
-                timeout=self._timeout,
-            )
-            response.raise_for_status()
-        except requests.exceptions.Timeout as exc:
-            raise PinergyTimeoutError(str(exc)) from exc
-        except requests.exceptions.HTTPError as exc:
-            if authenticated and exc.response is not None and exc.response.status_code == 401:
-                self._auth_token = None
-                raise PinergyAuthError("Auth token rejected (401)") from exc
-            raise PinergyHTTPError(str(exc)) from exc
-        except requests.exceptions.RequestException as exc:
-            raise PinergyHTTPError(str(exc)) from exc
+        attempts = 2 if authenticated else 1
 
-        try:
-            data = response.json()
-        except ValueError as exc:
-            raise PinergyResponseError(f"API returned malformed JSON: {exc}") from exc
-        if not isinstance(data, dict):
-            raise PinergyResponseError(f"API returned non-object JSON ({type(data).__name__})")
-        if check_api_error:
-            if authenticated and not data.get("success", True):
-                message = str(data.get("message") or "")
-                if _is_token_rejection(message):
-                    self._auth_token = None
-                    raise PinergyAuthError(message or "Auth token rejected")
-            _raise_for_api_error(data)
-        return data
+        for attempt in range(attempts):
+            req_headers = dict(headers) if headers else {}
+            if authenticated:
+                self._ensure_auth()
+                req_headers["auth_token"] = self._auth_token or ""
+
+            token_used = self._auth_token
+
+            try:
+                response = self._session.request(
+                    method,
+                    self._url(path),
+                    json=json,
+                    headers=req_headers,
+                    timeout=self._timeout,
+                )
+                response.raise_for_status()
+            except requests.exceptions.Timeout as exc:
+                raise PinergyTimeoutError(str(exc)) from exc
+            except requests.exceptions.HTTPError as exc:
+                if authenticated and exc.response is not None and exc.response.status_code == 401:
+                    with self._auth_lock:
+                        if self._auth_token == token_used:
+                            self._auth_token = None
+                    if attempt < attempts - 1 and self._password_hash is not None:
+                        continue
+                    raise PinergyAuthError("Auth token rejected (401)") from exc
+                raise PinergyHTTPError(str(exc)) from exc
+            except requests.exceptions.RequestException as exc:
+                raise PinergyHTTPError(str(exc)) from exc
+
+            try:
+                data = response.json()
+            except ValueError as exc:
+                raise PinergyResponseError(f"API returned malformed JSON: {exc}") from exc
+            if not isinstance(data, dict):
+                raise PinergyResponseError(f"API returned non-object JSON ({type(data).__name__})")
+
+            if check_api_error:
+                if authenticated and not data.get("success", True):
+                    message = str(data.get("message") or "")
+                    if _is_token_rejection(message):
+                        with self._auth_lock:
+                            if self._auth_token == token_used:
+                                self._auth_token = None
+                        if attempt < attempts - 1 and self._password_hash is not None:
+                            continue
+                        raise PinergyAuthError(message or "Auth token rejected")
+                _raise_for_api_error(data)
+            return data
 
     def _get(self, path: str) -> Dict[str, Any]:
         """Perform an authenticated GET and return the parsed JSON body."""

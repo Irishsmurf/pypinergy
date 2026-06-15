@@ -186,6 +186,70 @@ def test_concurrent_lazy_auth_logs_in_once(monkeypatch):
     assert client.is_authenticated
 
 
+def test_concurrent_self_healing_reauth(monkeypatch):
+    client = _make_client()
+    client._auth_token = "stale_token"
+
+    login_calls = []
+    def fake_login():
+        login_calls.append(1)
+        time.sleep(0.05)  # widen the race window
+        client._auth_token = "new_token"
+        return LoginResponse._from_dict({
+            "success": True,
+            "auth_token": "new_token",
+            "user": None,
+            "house": None,
+            "credit_cards": None
+        })
+
+    monkeypatch.setattr(client, "login", fake_login)
+
+    request_calls = []
+    def fake_request(method, url, *args, **kwargs):
+        headers = kwargs.get("headers", {})
+        token = headers.get("auth_token")
+        request_calls.append(token)
+
+        resp = requests.Response()
+        resp.url = url
+
+        if token == "stale_token":
+            resp.status_code = 401
+            raise requests.exceptions.HTTPError("401 Client Error: Unauthorized for url", response=resp)
+        elif token == "new_token":
+            resp.status_code = 200
+            resp._content = b'{"success": true, "balance": 10.0}'
+            return resp
+        else:
+            resp.status_code = 500
+            raise requests.exceptions.HTTPError("Unexpected token", response=resp)
+
+    monkeypatch.setattr(client._session, "request", fake_request)
+
+    results = []
+    errors = []
+
+    def run_get_balance():
+        try:
+            res = client.get_balance()
+            results.append(res)
+        except Exception as e:
+            errors.append(e)
+
+    threads = [threading.Thread(target=run_get_balance) for _ in range(5)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert len(errors) == 0
+    assert len(results) == 5
+    assert len(login_calls) == 1
+    assert "stale_token" in request_calls
+    assert "new_token" in request_calls
+
+
 @rsps_lib.activate
 def test_logout_fails_fast_without_network():
     _add_login(rsps_lib)
