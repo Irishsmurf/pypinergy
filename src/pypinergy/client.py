@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import json as _json_mod
+import random as _random
 import threading
+import time
 import urllib.parse
+from dataclasses import dataclass
 from types import TracebackType
 from typing import Any, Dict, Optional, Type
 
@@ -32,6 +36,96 @@ from .models import (
 
 _BASE_URL = "https://api.pinergy.ie"
 _USER_AGENT = "okhttp/5.1.0"
+_MAX_RESPONSE_BYTES = 2 * 1024 * 1024  # 2 MB
+
+_DEFAULT_CACHE_TTLS: Dict[str, float] = {
+    "/api/balance/": 60.0,
+    "/api/usage/": 300.0,
+    "/api/levelpayusage/": 300.0,
+    "/api/compare/": 900.0,
+    "/api/configinfo/": 1800.0,
+    "/api/defaultsinfo/": 1800.0,
+    "/api/activetopups/": 120.0,
+    "/api/getnotif/": 300.0,
+    "/version.json": 600.0,
+}
+
+
+# ---------------------------------------------------------------------------
+# Token-bucket rate limiter
+# ---------------------------------------------------------------------------
+
+
+class _TokenBucket:
+    __slots__ = ("_rate", "_burst", "_tokens", "_last", "_lock")
+
+    def __init__(self, rate: float = 2.0, burst: int = 5) -> None:
+        self._rate = rate
+        self._burst = burst
+        self._tokens = float(burst)
+        self._last = time.monotonic()
+        self._lock = threading.Lock()
+
+    def acquire(self) -> None:
+        sleep_time = 0.0
+        with self._lock:
+            now = time.monotonic()
+            self._tokens = min(self._burst, self._tokens + (now - self._last) * self._rate)
+            self._last = now
+            if self._tokens < 1.0:
+                sleep_time = (1.0 - self._tokens) / self._rate
+                self._tokens = 0.0
+                self._last = now + sleep_time
+            else:
+                self._tokens -= 1.0
+        if sleep_time > 0.0:
+            time.sleep(sleep_time)
+
+
+# ---------------------------------------------------------------------------
+# TTL cache
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class _CacheEntry:
+    __slots__ = ("data", "expires_at")
+    data: bytes
+    expires_at: float
+
+
+class _TTLCache:
+    _MAX_ENTRY_SIZE = 1_048_576  # 1 MB
+
+    def __init__(self, ttls: Dict[str, float]) -> None:
+        self._ttls = ttls
+        self._store: Dict[str, _CacheEntry] = {}
+        self._lock = threading.Lock()
+
+    def get(self, key: str) -> Optional[bytes]:
+        with self._lock:
+            entry = self._store.get(key)
+            if entry is None:
+                return None
+            if time.monotonic() > entry.expires_at:
+                del self._store[key]
+                return None
+            return entry.data
+
+    def put(self, key: str, data: bytes) -> None:
+        ttl = self._ttls.get(key)
+        if ttl is None or len(data) > self._MAX_ENTRY_SIZE:
+            return
+        with self._lock:
+            self._store[key] = _CacheEntry(data, time.monotonic() + ttl)
+
+    def flush(self) -> None:
+        with self._lock:
+            self._store.clear()
+
+    def invalidate(self, key: str) -> None:
+        with self._lock:
+            self._store.pop(key, None)
 
 
 class _NoRedirectSession(requests.Session):
@@ -75,6 +169,13 @@ class PinergyClient:
         password: str,
         base_url: str = _BASE_URL,
         timeout: float = 30.0,
+        max_response_bytes: int = _MAX_RESPONSE_BYTES,
+        rate_limit: float = 2.0,
+        rate_burst: int = 5,
+        max_retries: int = 2,
+        retry_base_delay: float = 0.5,
+        retry_max_delay: float = 10.0,
+        cache_disabled: bool = False,
     ) -> None:
         self._email = email
         self._password_hash: Optional[str] = hash_password(password)
@@ -88,11 +189,16 @@ class PinergyClient:
             )
 
         self._timeout = timeout
+        self._max_response_bytes = max_response_bytes
         self._auth_token: Optional[str] = None
-        # Reentrant: _ensure_auth() holds it while calling login(), which takes it again.
         self._auth_lock = threading.RLock()
         self._session = _NoRedirectSession()
         self._session.headers.update({"User-Agent": _USER_AGENT})
+        self._rate_limiter = _TokenBucket(rate=rate_limit, burst=rate_burst)
+        self._max_retries = max_retries
+        self._retry_base_delay = retry_base_delay
+        self._retry_max_delay = retry_max_delay
+        self._cache = _TTLCache(_DEFAULT_CACHE_TTLS) if not cache_disabled else None
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -146,21 +252,15 @@ class PinergyClient:
         authenticated: bool = False,
         check_api_error: bool = True,
     ) -> Dict[str, Any]:
-        """Perform an HTTP request and return the parsed JSON body.
+        """Perform an HTTP request and return the parsed JSON body."""
+        is_get = method.upper() == "GET"
 
-        Every transport failure is mapped onto the ``PinergyError`` hierarchy:
+        if self._cache is not None and is_get:
+            cached = self._cache.get(path)
+            if cached is not None:
+                result: Dict[str, Any] = _json_mod.loads(cached)
+                return result
 
-        - timeout → :class:`PinergyTimeoutError`
-        - HTTP 401 on an authenticated call → :class:`PinergyAuthError`
-          (the stale token is also dropped so the next call re-authenticates)
-        - token rejection reported as HTTP 200 ``success: false`` on an
-          authenticated call → :class:`PinergyAuthError` (stale token dropped
-          likewise)
-        - other HTTP / network errors → :class:`PinergyHTTPError`
-        - unparseable or non-object JSON body → :class:`PinergyResponseError`
-        - other application-level ``success: false`` → :class:`PinergyAPIError`
-          (unless *check_api_error* is False)
-        """
         attempts = 2 if authenticated else 1
 
         for attempt in range(attempts):
@@ -172,16 +272,9 @@ class PinergyClient:
                 req_headers["auth_token"] = token_used or ""
 
             try:
-                response = self._session.request(
-                    method,
-                    self._url(path),
-                    json=json,
-                    headers=req_headers,
-                    timeout=self._timeout,
+                response = self._do_request_with_retry(
+                    method, path, json=json, headers=req_headers, retryable=is_get,
                 )
-                response.raise_for_status()
-            except requests.exceptions.Timeout as exc:
-                raise PinergyTimeoutError(str(exc)) from exc
             except requests.exceptions.HTTPError as exc:
                 if authenticated and exc.response is not None and exc.response.status_code == 401:
                     with self._auth_lock:
@@ -191,8 +284,13 @@ class PinergyClient:
                         continue
                     raise PinergyAuthError("Auth token rejected (401)") from exc
                 raise PinergyHTTPError(str(exc)) from exc
-            except requests.exceptions.RequestException as exc:
-                raise PinergyHTTPError(str(exc)) from exc
+
+            content = response.content
+            if len(content) > self._max_response_bytes:
+                raise PinergyResponseError(
+                    f"response body ({len(content)} bytes) exceeds "
+                    f"limit ({self._max_response_bytes} bytes)"
+                )
 
             try:
                 data = response.json()
@@ -212,7 +310,62 @@ class PinergyClient:
                             continue
                         raise PinergyAuthError(message or "Auth token rejected")
                 _raise_for_api_error(data)
+
+            if self._cache is not None and is_get:
+                self._cache.put(path, content)
+
             return data
+        assert False, "unreachable"
+
+    def _do_request_with_retry(
+        self,
+        method: str,
+        path: str,
+        *,
+        json: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+        retryable: bool = False,
+    ) -> requests.Response:
+        """Execute an HTTP request with rate limiting and optional retries."""
+        max_transport_retries = self._max_retries if retryable else 0
+
+        def _backoff_sleep(attempt: int) -> None:
+            delay = min(self._retry_base_delay * (2 ** attempt), self._retry_max_delay)
+            delay += _random.uniform(0, self._retry_base_delay)
+            time.sleep(delay)
+
+        for transport_attempt in range(1 + max_transport_retries):
+            self._rate_limiter.acquire()
+            try:
+                response = self._session.request(
+                    method,
+                    self._url(path),
+                    json=json,
+                    headers=headers,
+                    timeout=self._timeout,
+                )
+                if response.status_code >= 500 and transport_attempt < max_transport_retries:
+                    _backoff_sleep(transport_attempt)
+                    continue
+                response.raise_for_status()
+                return response
+            except requests.exceptions.Timeout as exc:
+                if transport_attempt < max_transport_retries:
+                    _backoff_sleep(transport_attempt)
+                    continue
+                raise PinergyTimeoutError(str(exc)) from exc
+            except requests.exceptions.HTTPError as exc:
+                resp = exc.response
+                if resp is not None and resp.status_code == 401:
+                    raise exc
+                raise PinergyHTTPError(str(exc)) from exc
+            except requests.exceptions.ConnectionError as exc:
+                if transport_attempt < max_transport_retries:
+                    _backoff_sleep(transport_attempt)
+                    continue
+                raise PinergyHTTPError(str(exc)) from exc
+            except requests.exceptions.RequestException as exc:
+                raise PinergyHTTPError(str(exc)) from exc
         assert False, "unreachable"
 
     def _get(self, path: str) -> Dict[str, Any]:
@@ -273,6 +426,18 @@ class PinergyClient:
         with self._auth_lock:
             self._auth_token = None
             self._password_hash = None
+        if self._cache is not None:
+            self._cache.flush()
+
+    def cache_flush(self) -> None:
+        """Clear all cached responses."""
+        if self._cache is not None:
+            self._cache.flush()
+
+    def cache_invalidate(self, endpoint: str) -> None:
+        """Remove a specific endpoint from the cache."""
+        if self._cache is not None:
+            self._cache.invalidate(endpoint)
 
     def check_email(self, email: str) -> bool:
         """Check whether an email address has a registered Pinergy account.
