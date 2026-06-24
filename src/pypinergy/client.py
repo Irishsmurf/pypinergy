@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json as _json_mod
+import random as _random
 import threading
 import time
 import urllib.parse
@@ -65,16 +67,19 @@ class _TokenBucket:
         self._lock = threading.Lock()
 
     def acquire(self) -> None:
+        sleep_time = 0.0
         with self._lock:
             now = time.monotonic()
             self._tokens = min(self._burst, self._tokens + (now - self._last) * self._rate)
             self._last = now
             if self._tokens < 1.0:
                 sleep_time = (1.0 - self._tokens) / self._rate
-                time.sleep(sleep_time)
                 self._tokens = 0.0
+                self._last = now + sleep_time
             else:
                 self._tokens -= 1.0
+        if sleep_time > 0.0:
+            time.sleep(sleep_time)
 
 
 # ---------------------------------------------------------------------------
@@ -87,10 +92,6 @@ class _CacheEntry:
     __slots__ = ("data", "expires_at")
     data: bytes
     expires_at: float
-
-    def __init__(self, data: bytes, expires_at: float) -> None:
-        self.data = data
-        self.expires_at = expires_at
 
 
 class _TTLCache:
@@ -257,8 +258,6 @@ class PinergyClient:
         if self._cache is not None and is_get:
             cached = self._cache.get(path)
             if cached is not None:
-                import json as _json_mod
-
                 result: Dict[str, Any] = _json_mod.loads(cached)
                 return result
 
@@ -328,9 +327,12 @@ class PinergyClient:
         retryable: bool = False,
     ) -> requests.Response:
         """Execute an HTTP request with rate limiting and optional retries."""
-        import random as _random
-
         max_transport_retries = self._max_retries if retryable else 0
+
+        def _backoff_sleep(attempt: int) -> None:
+            delay = min(self._retry_base_delay * (2 ** attempt), self._retry_max_delay)
+            delay += _random.uniform(0, self._retry_base_delay)
+            time.sleep(delay)
 
         for transport_attempt in range(1 + max_transport_retries):
             self._rate_limiter.acquire()
@@ -343,23 +345,13 @@ class PinergyClient:
                     timeout=self._timeout,
                 )
                 if response.status_code >= 500 and transport_attempt < max_transport_retries:
-                    delay = min(
-                        self._retry_base_delay * (2 ** transport_attempt),
-                        self._retry_max_delay,
-                    )
-                    delay += _random.uniform(0, self._retry_base_delay)
-                    time.sleep(delay)
+                    _backoff_sleep(transport_attempt)
                     continue
                 response.raise_for_status()
                 return response
             except requests.exceptions.Timeout as exc:
                 if transport_attempt < max_transport_retries:
-                    delay = min(
-                        self._retry_base_delay * (2 ** transport_attempt),
-                        self._retry_max_delay,
-                    )
-                    delay += _random.uniform(0, self._retry_base_delay)
-                    time.sleep(delay)
+                    _backoff_sleep(transport_attempt)
                     continue
                 raise PinergyTimeoutError(str(exc)) from exc
             except requests.exceptions.HTTPError as exc:
@@ -369,12 +361,7 @@ class PinergyClient:
                 raise PinergyHTTPError(str(exc)) from exc
             except requests.exceptions.ConnectionError as exc:
                 if transport_attempt < max_transport_retries:
-                    delay = min(
-                        self._retry_base_delay * (2 ** transport_attempt),
-                        self._retry_max_delay,
-                    )
-                    delay += _random.uniform(0, self._retry_base_delay)
-                    time.sleep(delay)
+                    _backoff_sleep(transport_attempt)
                     continue
                 raise PinergyHTTPError(str(exc)) from exc
             except requests.exceptions.RequestException as exc:
