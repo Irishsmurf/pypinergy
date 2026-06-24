@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-24
+
+### Added
+- Client-side token-bucket rate limiting to prevent API abuse — default 2 req/s, burst 5 (#196).
+- Response body size limit (default 2 MB) to prevent memory exhaustion from malformed responses (#199).
+- Automatic retries with jittered exponential backoff for transient failures on GET requests (#197).
+- In-memory TTL response caching with per-endpoint expiration, thread-safe and flushed on logout (#198).
+- `cache_flush()` and `cache_invalidate(endpoint)` public methods for manual cache control.
+- New constructor parameters: `rate_limit`, `rate_burst`, `max_response_bytes`, `max_retries`, `retry_base_delay`, `retry_max_delay`, `cache_disabled`.
+
 ## [1.1.0] - 2026-06-15
 
 ### Added
