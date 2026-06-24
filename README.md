@@ -376,6 +376,59 @@ Applied to every network call; accepts a float for sub-second precision.
 client = PinergyClient("you@example.com", "password", timeout=10)
 ```
 
+### Rate limiting
+
+A built-in token-bucket rate limiter prevents accidental API abuse. Defaults:
+2 requests/second sustained, burst of 5.
+
+```python
+# Custom rate limit: 1 req/s, burst of 3
+client = PinergyClient("you@example.com", "password", rate_limit=1.0, rate_burst=3)
+```
+
+### Automatic retries
+
+GET requests are automatically retried on transient failures (5xx, timeouts,
+connection errors) with jittered exponential backoff. POST requests are never
+retried to avoid duplicate side effects.
+
+```python
+# Custom retry settings
+client = PinergyClient(
+    "you@example.com", "password",
+    max_retries=3,           # default: 2
+    retry_base_delay=1.0,    # default: 0.5s
+    retry_max_delay=30.0,    # default: 10s
+)
+```
+
+### Response size limit
+
+Responses are checked against a size limit before JSON decoding to prevent
+memory exhaustion from malformed server responses.
+
+```python
+# Custom limit (default: 2 MB)
+client = PinergyClient("you@example.com", "password", max_response_bytes=5_242_880)
+```
+
+### Response caching
+
+Responses are cached in memory with per-endpoint TTLs (e.g. balance: 60s,
+config: 30 min). Cache hits bypass both the network and the rate limiter.
+
+```python
+# Disable caching entirely
+client = PinergyClient("you@example.com", "password", cache_disabled=True)
+
+# Manual cache control
+client.cache_flush()                    # clear all cached responses
+client.cache_invalidate("/api/balance/")  # invalidate a specific endpoint
+```
+
+Logout automatically flushes the cache to prevent stale authenticated data
+from leaking.
+
 ### Custom base URL (testing / proxy)
 
 ```python
