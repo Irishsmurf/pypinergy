@@ -259,7 +259,8 @@ class PinergyClient:
             if cached is not None:
                 import json as _json_mod
 
-                return _json_mod.loads(cached)
+                result: Dict[str, Any] = _json_mod.loads(cached)
+                return result
 
         attempts = 2 if authenticated else 1
 
