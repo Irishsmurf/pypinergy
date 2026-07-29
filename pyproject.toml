@@ -52,6 +52,14 @@ packages = ["src/pypinergy"]
 line-length = 100
 target-version = "py39"
 
+[tool.ruff.lint]
+# Pin the rule set explicitly. Previously this was left unset, so the project
+# silently inherited whatever Ruff's built-in defaults happened to be — and a
+# Ruff release that widened those defaults broke CI on an unchanged commit.
+# These are the rules this codebase has actually been linted against; widening
+# the set should be a deliberate change, not a side effect of a version bump.
+select = ["E4", "E7", "E9", "F"]
+
 [tool.mypy]
 # Oldest version mypy can still model; the package itself supports 3.9 at runtime.
 python_version = "3.10"
