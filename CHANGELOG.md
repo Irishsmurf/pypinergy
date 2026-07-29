@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Pin the Ruff lint rule set explicitly in `pyproject.toml`. The config previously
+  left `[tool.ruff.lint] select` unset and inherited Ruff's built-in defaults, so a
+  Ruff release that widened those defaults failed CI on an unchanged commit.
+
 ## [1.2.0] - 2026-06-24
 
 ### Added
